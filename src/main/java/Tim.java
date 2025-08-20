@@ -1,6 +1,8 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Tim {
+    static ArrayList<String> tasks = new ArrayList<>(100);
     public static void main(String[] args) {
         /*
         String logo = " ____        _        \n"
@@ -13,11 +15,17 @@ public class Tim {
         System.out.println("Hello I'm Tim\nWhat can I do for you? \n");
         while (true) {
             String input = sc.nextLine();
-            if (input.equals("bye")) {
+            if (input.equals("list")) {
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks.get(i));
+                }
+
+            } else if (input.equals("bye")){
                 System.out.println("Bye! Hope to see you again soon!");
                 break;
             } else {
-                System.out.println(" " + input);
+                tasks.add(input);
+                System.out.println(" added: " + input);
             }
         }
         sc.close();
