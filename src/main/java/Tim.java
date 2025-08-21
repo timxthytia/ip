@@ -2,31 +2,70 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class Tim {
-    // Nested Task class
+    // Nested Task classs
     static class Task {
         protected String description;
-        protected boolean isDone;
+        protected boolean completed;
 
         Task(String description) {
             this.description = description;
-            this.isDone = false;
+            this.completed = false;
         }
 
         void markAsDone() {
-            this.isDone = true;
+            this.completed = true;
         }
 
         void markAsUndone() {
-            this.isDone = false;
+            this.completed = false;
         }
 
         String getStatusIcon() {
-            return (isDone ? "X" : " ");
+            return (completed ? "X" : " ");
         }
 
         @Override
         public String toString() {
             return "[" + getStatusIcon() + "] " + description;
+        }
+    }
+
+    static class Deadline extends Task {
+        private final String date;
+        Deadline(String description, String date) {
+            super(description);
+            this.date = date;
+        }
+
+        @Override
+        public String toString() {
+            return "[D]" + super.toString() + " (by: " + date + ")";
+        }
+    }
+
+    static class Event extends Task {
+        private final String start;
+        private final String end;
+        Event(String description, String start, String end) {
+            super(description);
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public String toString() {
+            return "[E]" + super.toString() + " (from: " + start + " to: " + end + ")";
+        }
+    }
+
+    static class Todo extends Task {
+        Todo(String description) {
+            super(description);
+        }
+
+        @Override
+        public String toString() {
+            return "[T]" + super.toString();
         }
     }
     static ArrayList<Task> tasks = new ArrayList<>(100);
@@ -39,11 +78,12 @@ public class Tim {
                 + "|____/ \\__,_|_|\\_\\___|\n";
          */
         Scanner sc = new Scanner(System.in);
-        System.out.println("Hello I'm Tim\nWhat can I do for you? \n");
+        System.out.println("Hello I'm Tim");
+        System.out.println("What can I do for you?");
         while (true) {
             String input = sc.nextLine();
             if (input.equals("list")) {
-                System.out.println("Here are the tasks in your list:\n");
+                System.out.println("Here are the tasks in your list:");
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println(" " + (i + 1) + ". " + tasks.get(i));
                 }
@@ -64,10 +104,40 @@ public class Tim {
             } else if (input.equals("bye")){
                 System.out.println("Bye! Hope to see you again soon!");
                 break;
+            } else if (input.startsWith("todo")) {
+                String desc = input.substring(4).trim();
+                Task newTask = new Todo(desc);
+                tasks.add(newTask);
+                System.out.println("Got it. I've added this task:");
+                System.out.println(" " + newTask);
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+            } else if (input.startsWith("deadline")) {
+                String body = input.substring("deadline".length()).trim();
+                String[] parts = body.split("/by", 2);
+                String desc = parts[0].trim();
+                String date = parts[1].trim();
+                Task newTask = new Deadline(desc, date);
+                tasks.add(newTask);
+                System.out.println("Got it. I've added this task:");
+                System.out.println(" " + newTask);
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+            } else if (input.startsWith("event")) {
+                String body = input.substring("event".length()).trim();
+                String[] dateSplit = body.split("/from", 2);
+                String desc = dateSplit[0].trim();
+                String[] toSplit = dateSplit[1].split("/to",2);
+                String start = toSplit[0].trim();
+                String end = toSplit[1].trim();
+
+                Task newTask = new Event(desc, start, end);
+                tasks.add(newTask);
+                System.out.println("Got it. I've added this task:");
+                System.out.println(" " + newTask);
+                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
             } else {
                 Task newTask = new Task(input);
                 tasks.add(newTask);
-                System.out.println(" added: " + input);
+                System.out.println(" added: " + newTask);
             }
         }
         sc.close();
