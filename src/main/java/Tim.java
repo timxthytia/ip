@@ -68,7 +68,8 @@ public class Tim {
             return "[T]" + super.toString();
         }
     }
-    static ArrayList<Task> tasks = new ArrayList<>(100);
+    static Task[] tasks = new Task[100];
+    static int taskCount = 0;
     public static void main(String[] args) {
         /*
         String logo = " ____        _        \n"
@@ -84,20 +85,20 @@ public class Tim {
             String input = sc.nextLine();
             if (input.equals("list")) {
                 System.out.println("Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println(" " + (i + 1) + ". " + tasks.get(i));
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
                 }
             } else if (input.startsWith("mark ")){
                 String index = input.substring(5).trim();
                 int idx = Integer.parseInt(index);
-                Task done = tasks.get(idx - 1);
+                Task done = tasks[idx - 1];
                 done.markAsDone();
                 System.out.println("Nice! I've marked this task as done:");
                 System.out.println(" " + done);
             } else if (input.startsWith("unmark ")){
                 String index = input.substring(7).trim();
                 int idx = Integer.parseInt(index);
-                Task undone = tasks.get(idx - 1);
+                Task undone = tasks[idx - 1];
                 undone.markAsUndone();
                 System.out.println("OK, I've marked this task as not done yet:");
                 System.out.println(" " + undone);
@@ -107,20 +108,22 @@ public class Tim {
             } else if (input.startsWith("todo")) {
                 String desc = input.substring(4).trim();
                 Task newTask = new Todo(desc);
-                tasks.add(newTask);
+                tasks[taskCount] = newTask;
+                taskCount++;
                 System.out.println("Got it. I've added this task:");
                 System.out.println(" " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                System.out.println("Now you have " + taskCount + " tasks in the list.");
             } else if (input.startsWith("deadline")) {
                 String body = input.substring("deadline".length()).trim();
                 String[] parts = body.split("/by", 2);
                 String desc = parts[0].trim();
                 String date = parts[1].trim();
                 Task newTask = new Deadline(desc, date);
-                tasks.add(newTask);
+                tasks[taskCount] = newTask;
+                taskCount++;
                 System.out.println("Got it. I've added this task:");
                 System.out.println(" " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                System.out.println("Now you have " + taskCount + " tasks in the list.");
             } else if (input.startsWith("event")) {
                 String body = input.substring("event".length()).trim();
                 String[] dateSplit = body.split("/from", 2);
@@ -130,13 +133,15 @@ public class Tim {
                 String end = toSplit[1].trim();
 
                 Task newTask = new Event(desc, start, end);
-                tasks.add(newTask);
+                tasks[taskCount] = newTask;
+                taskCount++;
                 System.out.println("Got it. I've added this task:");
                 System.out.println(" " + newTask);
-                System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                System.out.println("Now you have " + taskCount + " tasks in the list.");
             } else {
                 Task newTask = new Task(input);
-                tasks.add(newTask);
+                tasks[taskCount] = newTask;
+                taskCount++;
                 System.out.println(" added: " + newTask);
             }
         }
