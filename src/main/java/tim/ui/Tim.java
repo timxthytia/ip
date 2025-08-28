@@ -8,7 +8,17 @@ import tim.parser.Parser;
 import tim.storage.Storage;
 import tim.task.TaskList;
 
+/**
+ * The main entry point of the Duke chatbot application.
+ * Handles initialisation of the UI, Storage, and TaskList components,
+ * and runs the main command loop until the user exits the application.
+ */
 public class Tim {
+    /**
+     * Main entry point of the program.
+     *
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Ui ui = new Ui(sc);

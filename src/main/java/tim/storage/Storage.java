@@ -14,16 +14,38 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+/**
+ * Handles the reading and writing of tasks to and from a save file on disk.
+ * The Storage class is responsible for persisting the user's task list across
+ * program runs.
+ * when the application starts, and saves the current tasks back to the file
+ * whenever changes are made.
+ *
+ */
 public class Storage {
     private final Path dataDir;
     private final Path dataFile;
 
+    /**
+     * Creates a new Storage object with the given file path.
+     *
+     * @param filePath the path of the file to save/load tasks from.
+     */
     public Storage(String filePath) {
         Path p = Paths.get(filePath);
         this.dataDir = p.getParent() == null ? Paths.get(".") : p.getParent();
         this.dataFile = p;
     }
 
+    /**
+     * Loads tasks from the data file into a TaskList.
+     * If the file or its parent directory does not exist, this method will
+     * create the directory and return an empty TaskList.
+     *
+     * @return a TaskList containing the tasks loaded from file.
+     * @throws DukeException if an I/O error occurs or if
+     * the data file cannot be created.
+     */
     public TaskList load() throws DukeException {
         TaskList list = new TaskList(new ArrayList<>());
         if (!Files.exists(dataFile)) {
@@ -70,6 +92,12 @@ public class Storage {
         return list;
     }
 
+    /**
+     * Saves the given TaskList to the data file.
+     * If the data directory does not exist, it will be created.
+     *
+     * @param tasks the TaskList to save.
+     */
     public void save(TaskList tasks) {
         try {
             if (!Files.exists(dataDir)) Files.createDirectories(dataDir);

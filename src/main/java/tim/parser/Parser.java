@@ -8,10 +8,25 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Responsible for interpreting user input and converting it into commands.
+ * Provides methods to parse full user commands into specific Command
+ * objects, as well as utility methods to parse dates and times in strict formats.
+ *
+ */
 public class Parser {
     private static final DateTimeFormatter INPUT_DATE_ONLY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter INPUT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
+    /**
+     * Parses a string into a LocalDateTime, using strict date and date-time formats.
+     * Accepts inputs in "yyyy-MM-dd" (default to 0000) or
+     * "yyyy-MM-dd HHmm" (with time). Falls back to default parsing if possible.
+     *
+     * @param s the string to parse.
+     * @return the parsed LocalDateTime.
+     * @throws IllegalArgumentException if the input cannot be parsed.
+     */
     public static LocalDateTime parseStrictDateOrDateTime(String s) {
         String trimmed = s.trim();
         try { return LocalDateTime.parse(trimmed, INPUT_DATE_TIME); } catch (DateTimeParseException ignored) {}
@@ -20,6 +35,13 @@ public class Parser {
         throw new IllegalArgumentException("Unrecognized date/time (use yyyy-MM-dd or yyyy-MM-dd HHmm): " + s);
     }
 
+    /**
+     * Parses a user input string into a Command object.
+     *
+     * @param input the full command entered by the user.
+     * @return the corresponding Command object.
+     * @throws DukeException if the command is invalid or cannot be understood.
+     */
     public static Command parse(String input) throws DukeException {
         if (input.equals("list")) return new ListCommand();
         else if (input.startsWith("mark ")) return new MarkCommand(parseIndex(input.substring(5)));
@@ -32,6 +54,13 @@ public class Parser {
         throw new DukeException("OOPS!!! I'm sorry, but I don't know what that means :-(");
     }
 
+    /**
+     * Parses a string into a task index integer.
+     *
+     * @param s the string containing the index.
+     * @return the parsed integer index.
+     * @throws DukeException if the input is blank or not a valid integer.
+     */
     private static int parseIndex(String s) throws DukeException {
         String t = s.trim();
         if (t.isBlank()) throw new DukeException("OOPS!!! Provide a task number.");
@@ -40,6 +69,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a deadline command string into an AddDeadlineCommand.
+     *
+     * @param input the full deadline command entered by the user.
+     * @return the AddDeadlineCommand created from the input.
+     * @throws DukeException if the input format is invalid or the date cannot be parsed.
+     */
     private static Command parseDeadline(String input) throws DukeException {
         String body = input.substring("deadline".length()).trim();
         if (!body.contains("/by")) throw new DukeException("Deadline format: deadline <desc> /by <due date>.");
@@ -56,6 +92,13 @@ public class Parser {
         return new AddDeadlineCommand(desc, dueDateTime);
     }
 
+    /**
+     * Parses an event command string into an AddEventCommand.
+     *
+     * @param input the full event command entered by the user.
+     * @return the AddEventCommand created from the input.
+     * @throws DukeException if the input format is invalid or the dates cannot be parsed.
+     */
     private static Command parseEvent(String input) throws DukeException {
         String body = input.substring("event".length()).trim();
         if (!body.contains("/from") || !body.contains("/to"))
