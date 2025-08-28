@@ -51,6 +51,10 @@ public class Parser {
         else if (input.startsWith("deadline")) return parseDeadline(input);
         else if (input.startsWith("event")) return parseEvent(input);
         else if (input.startsWith("delete ")) return new DeleteCommand(parseIndex(input.substring(7)));
+        else if (input.startsWith("find ")) {
+            String keyword = input.substring(5).trim();
+            return new FindCommand(keyword);
+        }
         throw new DukeException("OOPS!!! I'm sorry, but I don't know what that means :-(");
     }
 
