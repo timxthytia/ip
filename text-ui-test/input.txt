@@ -1,12 +1,2 @@
-todo read book
-todo return book
 list
-mark 2
-unmark 2
-todo borrow book
-deadline return book /by Sunday
-event project meeting /from Mon 2pm /to 4pm
-todo
-blah
-delete 3
 bye

@@ -7,6 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 
 public class Tim {
@@ -44,27 +48,28 @@ public class Tim {
     }
 
     static class Deadline extends Task {
-        private final String date;
-        Deadline(String description, String date) {
+        private final LocalDateTime due;
+        Deadline(String description, LocalDateTime due) {
             super(description);
-            this.date = date;
+            this.due = due;
         }
 
         @Override
         String toStorageString() {
-            return "D | " + (completed ? "1" : "0") + " | " + description + " | " + date;
+            return "D | " + (completed ? "1" : "0") + " | " + description + " | " + due.toString();
         }
 
         @Override
         public String toString() {
-            return "[D]" + super.toString() + " (by: " + date + ")";
+            DateTimeFormatter DISP = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+            return "[D]" + super.toString() + " (by: " + due.format(DISP) + ")";
         }
     }
 
     static class Event extends Task {
-        private final String start;
-        private final String end;
-        Event(String description, String start, String end) {
+        private final LocalDateTime start;
+        private final LocalDateTime end;
+        Event(String description, LocalDateTime start, LocalDateTime end) {
             super(description);
             this.start = start;
             this.end = end;
@@ -72,12 +77,18 @@ public class Tim {
 
         @Override
         String toStorageString() {
-            return "E | " + (completed ? "1" : "0") + " | " + description + " | " + start + " to " + end;
+            return "E | " + (completed ? "1" : "0") + " | " + description +
+                    " | " + start.toString() + " to " + end.toString();
         }
 
         @Override
         public String toString() {
-            return "[E]" + super.toString() + " (from: " + start + " to: " + end + ")";
+            DateTimeFormatter DISP = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+            if (start.equals(end)) {
+                return "[E]" + super.toString() + " (on: " + start.format(DISP) + ")";
+            } else {
+                return "[E]" + super.toString() + " (from: " + start.format(DISP) + " to: " + end.format(DISP) + ")";
+            }
         }
     }
 
@@ -168,7 +179,8 @@ public class Tim {
                         printError("Skipping corrupted event: " + line);
                         continue;
                     }
-                    t = new Deadline(description, parts[3]);
+                    LocalDateTime due = parseStrictDateOrDateTime(parts[3]);
+                    t = new Deadline(description, due);
                     break;
                 case "E":
                     if (parts.length < 4) {
@@ -180,7 +192,9 @@ public class Tim {
                         printError("Skipping corrupted event: " + line);
                         continue;
                     }
-                    t = new Event(description, startAndEnd[0], startAndEnd[1]);
+                    LocalDateTime s = parseStrictDateOrDateTime(startAndEnd[0]);
+                    LocalDateTime e = parseStrictDateOrDateTime(startAndEnd[1]);
+                    t = new Event(description, s, e);
                     break;
                 default:
                     printError("Skipping unknown task type: " + type);
@@ -196,6 +210,28 @@ public class Tim {
         } catch (Exception e) {
             printError("Error parsing data file, continuing with partial load: " + e.getMessage());
         }
+    }
+
+    // Parsing Date and Time */
+    private static final DateTimeFormatter INPUT_DATE_ONLY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter INPUT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    static LocalDateTime parseStrictDateOrDateTime(String s) {
+        String trimmed = s.trim();
+        // Datetime with HHmm
+        try {
+            return LocalDateTime.parse(trimmed, INPUT_DATE_TIME);
+        } catch (DateTimeParseException ignored) { }
+        // Date only
+        try {
+            LocalDate d = LocalDate.parse(trimmed, INPUT_DATE_ONLY);
+            return d.atStartOfDay();
+        } catch (DateTimeParseException ignored) { }
+        // ISO-8601 LocalDateTime (used in storage)
+        try {
+            return LocalDateTime.parse(trimmed);
+        } catch (DateTimeParseException ignored) { }
+        throw new IllegalArgumentException("Unrecognized date/time (use yyyy-MM-dd or yyyy-MM-dd HHmm): " + s);
     }
 
     static ArrayList<Task> tasks = new ArrayList<>();
@@ -290,7 +326,15 @@ public class Tim {
                     String desc = parts[0].trim();
                     String date = parts[1].trim();
 
-                    Task newTask = new Deadline(desc, date);
+                    LocalDateTime dueDateTime;
+                    try {
+                        dueDateTime = parseStrictDateOrDateTime(date);
+                    } catch (IllegalArgumentException ex) {
+                        throw new DukeException("OOPS!!! I couldn't understand that date/time. " +
+                                "Please use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
+                    }
+
+                    Task newTask = new Deadline(desc, dueDateTime);
                     tasks.add(newTask);
                     saveTasks();
                     System.out.println("Got it. I've added this task:");
@@ -324,7 +368,17 @@ public class Tim {
                         throw new DukeException("OOPS!!! Event format: event <desc> /from <start date> /to <end date>.");
                     }
 
-                    Task newTask = new Event(desc, start, end);
+                    LocalDateTime startDateTime;
+                    LocalDateTime endDateTime;
+                    try {
+                        startDateTime = parseStrictDateOrDateTime(start);
+                        endDateTime = parseStrictDateOrDateTime(end);
+                    } catch (IllegalArgumentException ex) {
+                        throw new DukeException("OOPS!!! I couldn't understand those date/times. " +
+                                "Please use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
+                    }
+
+                    Task newTask = new Event(desc, startDateTime, endDateTime);
                     tasks.add(newTask);
                     saveTasks();
                     System.out.println("Got it. I've added this task:");
