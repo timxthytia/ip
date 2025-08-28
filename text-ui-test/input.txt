@@ -1,2 +1,18 @@
 list
+lsit
+todo todo1
+todo todo2
+list
+deadline deadline1 /by 2020-02-02
+deadline deadline2 /by 2020-02-02 2000
+list
+event event1 /from 2020-02-02 1200 /to 2020-02-03 0000
+list
+mark 6
+mark -1
+mark 0
+mark 1
+mark 4
+list
+b]
 bye

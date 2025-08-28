@@ -1,0 +1,80 @@
+package tim.parser;
+
+import tim.command.*;
+import tim.exception.DukeException;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
+public class Parser {
+    private static final DateTimeFormatter INPUT_DATE_ONLY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter INPUT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    public static LocalDateTime parseStrictDateOrDateTime(String s) {
+        String trimmed = s.trim();
+        try { return LocalDateTime.parse(trimmed, INPUT_DATE_TIME); } catch (DateTimeParseException ignored) {}
+        try { LocalDate d = LocalDate.parse(trimmed, INPUT_DATE_ONLY); return d.atStartOfDay(); } catch (DateTimeParseException ignored) {}
+        try { return LocalDateTime.parse(trimmed); } catch (DateTimeParseException ignored) {}
+        throw new IllegalArgumentException("Unrecognized date/time (use yyyy-MM-dd or yyyy-MM-dd HHmm): " + s);
+    }
+
+    public static Command parse(String input) throws DukeException {
+        if (input.equals("list")) return new ListCommand();
+        else if (input.startsWith("mark ")) return new MarkCommand(parseIndex(input.substring(5)));
+        else if (input.startsWith("unmark ")) return new UnmarkCommand(parseIndex(input.substring(7)));
+        else if (input.equals("bye")) return new ExitCommand();
+        else if (input.startsWith("todo")) return new AddTodoCommand(input.substring(4).trim());
+        else if (input.startsWith("deadline")) return parseDeadline(input);
+        else if (input.startsWith("event")) return parseEvent(input);
+        else if (input.startsWith("delete ")) return new DeleteCommand(parseIndex(input.substring(7)));
+        throw new DukeException("OOPS!!! I'm sorry, but I don't know what that means :-(");
+    }
+
+    private static int parseIndex(String s) throws DukeException {
+        String t = s.trim();
+        if (t.isBlank()) throw new DukeException("OOPS!!! Provide a task number.");
+        try { return Integer.parseInt(t); } catch (NumberFormatException e) {
+            throw new DukeException("OOPS!!! Task number must be an integer.");
+        }
+    }
+
+    private static Command parseDeadline(String input) throws DukeException {
+        String body = input.substring("deadline".length()).trim();
+        if (!body.contains("/by")) throw new DukeException("Deadline format: deadline <desc> /by <due date>.");
+        String[] parts = body.split("/by", 2);
+        if (parts.length < 2 || parts[0].trim().isBlank() || parts[1].trim().isBlank())
+            throw new DukeException("Deadline format: deadline <desc> /by <due date>.");
+        String desc = parts[0].trim();
+        String date = parts[1].trim();
+        LocalDateTime dueDateTime;
+        try { dueDateTime = parseStrictDateOrDateTime(date); }
+        catch (IllegalArgumentException ex) {
+            throw new DukeException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
+        }
+        return new AddDeadlineCommand(desc, dueDateTime);
+    }
+
+    private static Command parseEvent(String input) throws DukeException {
+        String body = input.substring("event".length()).trim();
+        if (!body.contains("/from") || !body.contains("/to"))
+            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+        String[] dateSplit = body.split("/from", 2);
+        if (dateSplit.length < 2) throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+        String desc = dateSplit[0].trim();
+        String[] toSplit = dateSplit[1].split("/to", 2);
+        if (toSplit.length < 2) throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+        String start = toSplit[0].trim();
+        String end = toSplit[1].trim();
+        if (desc.isBlank() || start.isBlank() || end.isBlank())
+            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+
+        LocalDateTime startDT, endDT;
+        try { startDT = parseStrictDateOrDateTime(start); endDT = parseStrictDateOrDateTime(end); }
+        catch (IllegalArgumentException ex) {
+            throw new DukeException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
+        }
+        return new AddEventCommand(desc, startDT, endDT);
+    }
+}

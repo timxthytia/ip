@@ -2,27 +2,66 @@ Hello I'm Tim
 What can I do for you?
 ____________________________________________________________
 Here are the tasks in your list:
- 1.[T][ ] read book
- 2.[T][ ] return book
- 3.[T][ ] borrow book
- 4.[D][ ] return book (by: Sep 01 2025 12:00)
- 5.[E][ ] project meeting (from: Nov 20 2025 09:30 to: Nov 20 2025 11:00)
- 6.[T][ ] read book
- 7.[T][ ] return book
- 8.[T][ ] borrow book
- 9.[D][ ] return book (by: Sep 01 2025 12:00)
- 10.[E][ ] project meeting (from: Nov 20 2025 09:30 to: Nov 20 2025 11:00)
- 11.[T][ ] read book
- 12.[T][ ] return book
- 13.[T][ ] borrow book
- 14.[D][ ] return book (by: Sep 01 2025 12:00)
- 15.[E][ ] project meeting (from: Nov 20 2025 09:30 to: Nov 20 2025 11:00)
- 16.[T][ ] read book
- 17.[T][ ] return book
- 18.[T][ ] borrow book
- 19.[D][ ] return book (by: Sep 01 2025 12:00)
- 20.[E][ ] project meeting (from: Nov 20 2025 09:30 to: Nov 20 2025 11:00)
 ____________________________________________________________
+ OOPS!!! I'm sorry, but I don't know what that means :-(
+____________________________________________________________
+Got it. I've added this task:
+ [T][ ] todo1
+Now you have 1 tasks in the list.
+____________________________________________________________
+Got it. I've added this task:
+ [T][ ] todo2
+Now you have 2 tasks in the list.
+____________________________________________________________
+Here are the tasks in your list:
+ 1.[T][ ] todo1
+ 2.[T][ ] todo2
+____________________________________________________________
+Got it. I've added this task:
+ [D][ ] deadline1 (by: Feb 02 2020 00:00)
+Now you have 3 tasks in the list.
+____________________________________________________________
+Got it. I've added this task:
+ [D][ ] deadline2 (by: Feb 02 2020 20:00)
+Now you have 4 tasks in the list.
+____________________________________________________________
+Here are the tasks in your list:
+ 1.[T][ ] todo1
+ 2.[T][ ] todo2
+ 3.[D][ ] deadline1 (by: Feb 02 2020 00:00)
+ 4.[D][ ] deadline2 (by: Feb 02 2020 20:00)
+____________________________________________________________
+Got it. I've added this task:
+ [E][ ] event1 (from: Feb 02 2020 12:00 to: Feb 03 2020 00:00)
+Now you have 5 tasks in the list.
+____________________________________________________________
+Here are the tasks in your list:
+ 1.[T][ ] todo1
+ 2.[T][ ] todo2
+ 3.[D][ ] deadline1 (by: Feb 02 2020 00:00)
+ 4.[D][ ] deadline2 (by: Feb 02 2020 20:00)
+ 5.[E][ ] event1 (from: Feb 02 2020 12:00 to: Feb 03 2020 00:00)
+____________________________________________________________
+ OOPS!!! Task number out of range.
+____________________________________________________________
+ OOPS!!! Task number out of range.
+____________________________________________________________
+ OOPS!!! Task number out of range.
+____________________________________________________________
+Nice! I've marked this task as done:
+ [T][X] todo1
+____________________________________________________________
+Nice! I've marked this task as done:
+ [D][X] deadline2 (by: Feb 02 2020 20:00)
+____________________________________________________________
+Here are the tasks in your list:
+ 1.[T][X] todo1
+ 2.[T][ ] todo2
+ 3.[D][ ] deadline1 (by: Feb 02 2020 00:00)
+ 4.[D][X] deadline2 (by: Feb 02 2020 20:00)
+ 5.[E][ ] event1 (from: Feb 02 2020 12:00 to: Feb 03 2020 00:00)
+____________________________________________________________
+ OOPS!!! I'm sorry, but I don't know what that means :-(
 ____________________________________________________________
 Bye! Hope to see you again soon!
 ____________________________________________________________

@@ -1,4 +1,4 @@
-# Tim User Guide
+# tim.ui.Tim User Guide
 
 // Update the title above to match the actual product name
 

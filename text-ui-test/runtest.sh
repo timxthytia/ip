@@ -12,15 +12,19 @@ then
     rm ACTUAL.TXT
 fi
 
+# ensure a clean slate for the save file used by the app
+rm -f ./data/tim.text
+mkdir -p ./data
+
 # compile the code into the bin folder, terminates if error occurred
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/*.java
+if ! javac -cp ../src/main/java -Xlint:none -d ../bin $(find ../src/main/java -name "*.java")
 then
     echo "********** BUILD FAILURE **********"
     exit 1
 fi
 
 # run the program, feed commands from input.txt file and redirect the output to the ACTUAL.TXT
-java -classpath ../bin Tim < input.txt > ACTUAL.TXT
+java -classpath ../bin tim.ui.Tim < input.txt > ACTUAL.TXT
 
 # convert to UNIX format
 cp EXPECTED.TXT EXPECTED-UNIX.TXT
