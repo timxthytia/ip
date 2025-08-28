@@ -1,5 +1,13 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public class Tim {
     // Nested Task classs
@@ -20,6 +28,11 @@ public class Tim {
             this.completed = false;
         }
 
+        /* Returns line format that is saved to storage, to be overridden in subclasses */
+        String toStorageString() {
+            return "? | " + (completed ? "1" : "0") + " | " + description;
+        }
+
         String getStatusIcon() {
             return (completed ? "X" : " ");
         }
@@ -38,6 +51,11 @@ public class Tim {
         }
 
         @Override
+        String toStorageString() {
+            return "D | " + (completed ? "1" : "0") + " | " + description + " | " + date;
+        }
+
+        @Override
         public String toString() {
             return "[D]" + super.toString() + " (by: " + date + ")";
         }
@@ -53,6 +71,11 @@ public class Tim {
         }
 
         @Override
+        String toStorageString() {
+            return "E | " + (completed ? "1" : "0") + " | " + description + " | " + start + " to " + end;
+        }
+
+        @Override
         public String toString() {
             return "[E]" + super.toString() + " (from: " + start + " to: " + end + ")";
         }
@@ -61,6 +84,11 @@ public class Tim {
     static class Todo extends Task {
         Todo(String description) {
             super(description);
+        }
+
+        @Override
+        String toStorageString() {
+            return "T | " + (completed ? "1" : "0") + " | " + description;
         }
 
         @Override
@@ -79,16 +107,101 @@ public class Tim {
         System.out.println(" " + message);
     }
 
+    /* Code for Level-7*/
+    private static final Path DATA_DIR = Paths.get("data");
+    private static final Path DATA_FILE = DATA_DIR.resolve("tim.text");
+
+    /* Save tasks to ./data/tim.text automatically whenever task list change */
+    static void saveTasks() {
+        try {
+            if (!Files.exists(DATA_DIR)) {
+                // if ./data directory not exist, create it
+                Files.createDirectories(DATA_DIR);
+            }
+            try (BufferedWriter bw = Files.newBufferedWriter(DATA_FILE, StandardCharsets.UTF_8)) {
+                for (Task t : tasks) {
+                    // add each task to DATA_FILE tim.text
+                    bw.write(t.toStorageString());
+                    bw.newLine();
+                }
+            }
+        } catch (IOException ioe) {
+            printError("Could not save tasks: " + ioe.getMessage());
+        }
+    }
+
+    /* Load tasks from ./data/tim.text automatically when chatbot starts up */
+    static void loadTasks() {
+        if (!Files.exists(DATA_FILE)) {
+            // if DATA_FILE not exist when chatbot first start up
+            try {
+                if (!Files.exists(DATA_DIR)) {
+                    // if ./data directory not exist, create it
+                    Files.createDirectories(DATA_DIR);
+                }
+            } catch (IOException ioe) {
+                printError("Could not create directory: " + ioe.getMessage());
+            }
+            return;
+        }
+        try (BufferedReader br = Files.newBufferedReader(DATA_FILE, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                /* Format string format for output */
+                String[] parts = line.split("\\s*\\|\\s*");
+                if (parts.length < 3) {
+                    printError("Skipping corrupted line: " + line);
+                    continue;
+                }
+                String type = parts[0].trim();
+                String status = parts[1].trim();
+                String description = parts[2].trim();
+                boolean isDone = status.equals("1"); // boolean rep if task is marked done
+
+                Task t;
+                switch (type) {
+                case "T":
+                    t = new Todo(description);
+                    break;
+                case "D":
+                    if (parts.length < 4) {
+                        printError("Skipping corrupted event: " + line);
+                        continue;
+                    }
+                    t = new Deadline(description, parts[3]);
+                    break;
+                case "E":
+                    if (parts.length < 4) {
+                        printError("Skipping corrupted event: " + line);
+                        continue;
+                    }
+                    String[] startAndEnd = parts[3].split("\\s*to\\s*");
+                    if (startAndEnd.length < 2) {
+                        printError("Skipping corrupted event: " + line);
+                        continue;
+                    }
+                    t = new Event(description, startAndEnd[0], startAndEnd[1]);
+                    break;
+                default:
+                    printError("Skipping unknown task type: " + type);
+                    continue;
+                }
+                if (isDone) {
+                    t.markAsDone();
+                }
+                tasks.add(t);
+            }
+        } catch (IOException ioe) {
+            printError("Could not load tasks: " + ioe.getMessage());
+        } catch (Exception e) {
+            printError("Error parsing data file, continuing with partial load: " + e.getMessage());
+        }
+    }
+
     static ArrayList<Task> tasks = new ArrayList<>();
     public static void main(String[] args) {
-        /*
-        String logo = " ____        _        \n"
-                + "|  _ \\ _   _| | _____ \n"
-                + "| | | | | | | |/ / _ \\\n"
-                + "| |_| | |_| |   <  __/\n"
-                + "|____/ \\__,_|_|\\_\\___|\n";
-         */
         Scanner sc = new Scanner(System.in);
+        loadTasks();
         System.out.println("Hello I'm Tim");
         System.out.println("What can I do for you?");
         while (true) {
@@ -119,6 +232,7 @@ public class Tim {
 
                     Task done = tasks.get(idx - 1);
                     done.markAsDone();
+                    saveTasks();
                     System.out.println("Nice! I've marked this task as done:");
                     System.out.println(" " + done);
                 } else if (input.startsWith("unmark ")) {
@@ -142,6 +256,7 @@ public class Tim {
 
                     Task undone = tasks.get(idx - 1);
                     undone.markAsUndone();
+                    saveTasks();
                     System.out.println("OK, I've marked this task as not done yet:");
                     System.out.println(" " + undone);
                 } else if (input.equals("bye")){
@@ -156,6 +271,7 @@ public class Tim {
 
                     Task newTask = new Todo(desc);
                     tasks.add(newTask);
+                    saveTasks();
                     System.out.println("Got it. I've added this task:");
                     System.out.println(" " + newTask);
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
@@ -176,6 +292,7 @@ public class Tim {
 
                     Task newTask = new Deadline(desc, date);
                     tasks.add(newTask);
+                    saveTasks();
                     System.out.println("Got it. I've added this task:");
                     System.out.println(" " + newTask);
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
@@ -209,6 +326,7 @@ public class Tim {
 
                     Task newTask = new Event(desc, start, end);
                     tasks.add(newTask);
+                    saveTasks();
                     System.out.println("Got it. I've added this task:");
                     System.out.println(" " + newTask);
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
@@ -227,6 +345,7 @@ public class Tim {
                         throw new DukeException("OOPS!!! Task number out of range.");
                     }
                     Task removed = tasks.remove(idx - 1);
+                    saveTasks();
                     System.out.println("Noted. I've removed this task:");
                     System.out.println("  " + removed);
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
