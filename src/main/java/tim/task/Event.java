@@ -34,8 +34,8 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + (completed ? "1" : "0") + " | " + description +
-                " | " + start.toString() + " to " + end.toString();
+        return "E | " + (completed ? "1" : "0") + " | " + description
+                + " | " + start.toString() + " to " + end.toString();
     }
 
     /**
@@ -48,11 +48,12 @@ public class Event extends Task {
      */
     @Override
     public String toString() {
-        DateTimeFormatter DISP = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
         if (start.equals(end)) {
-            return "[E]" + super.toString() + " (on: " + start.format(DISP) + ")";
+            return "[E]" + super.toString() + " (on: " + start.format(displayFormatter) + ")";
         } else {
-            return "[E]" + super.toString() + " (from: " + start.format(DISP) + " to: " + end.format(DISP) + ")";
+            return "[E]" + super.toString() + " (from: " + start.format(displayFormatter)
+                    + " to: " + end.format(displayFormatter) + ")";
         }
     }
 }

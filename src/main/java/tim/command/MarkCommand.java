@@ -6,9 +6,16 @@ import tim.task.Task;
 import tim.task.TaskList;
 import tim.ui.Ui;
 
+/**
+ * Represents a command that marks a task as completed.
+ * The command uses the given index to find the task in the task list,
+ * marks it as done, and saves the updated list to storage.
+ */
 public class MarkCommand extends Command {
     private final int index;
-    public MarkCommand(int index) { this.index = index; }
+    public MarkCommand(int index) {
+        this.index = index;
+    }
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
         if (index < 1 || index > tasks.size()) {

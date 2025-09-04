@@ -7,6 +7,10 @@ import tim.task.TaskList;
 import tim.task.Todo;
 import tim.ui.Ui;
 
+/**
+ * Represents a command that adds a todo task to the task list.
+ * A todo task only has a description and no associated date or time.
+ */
 public class AddTodoCommand extends Command {
     private final String desc;
 

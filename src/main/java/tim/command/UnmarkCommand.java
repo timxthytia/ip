@@ -6,6 +6,11 @@ import tim.task.Task;
 import tim.task.TaskList;
 import tim.ui.Ui;
 
+/**
+ * Represents a command that marks a task as not done.
+ * The command uses the given index to find the task in the task list,
+ * marks it as undone, and saves the updated list to storage.
+ */
 public class UnmarkCommand extends Command {
     private final int index;
 

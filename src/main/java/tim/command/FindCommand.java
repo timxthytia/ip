@@ -1,11 +1,11 @@
 package tim.command;
 
+import java.util.ArrayList;
+
 import tim.storage.Storage;
 import tim.task.Task;
 import tim.task.TaskList;
 import tim.ui.Ui;
-
-import java.util.ArrayList;
 
 /**
  * Finds and lists tasks that match a given keyword.

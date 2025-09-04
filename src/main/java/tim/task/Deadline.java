@@ -23,7 +23,6 @@ public class Deadline extends Task {
         this.due = due;
     }
 
-    @Override
     /**
      * Returns a string representation of this Deadline task suitable for storage.
      * The format used is:
@@ -31,11 +30,11 @@ public class Deadline extends Task {
      *
      * @return the storage string representation of this task.
      */
+    @Override
     public String toStorageString() {
         return "D | " + (completed ? "1" : "0") + " | " + description + " | " + due.toString();
     }
 
-    @Override
     /**
      * Returns a string representation of this Deadline task for user display.
      * The output includes the task type, completion status, description,
@@ -43,9 +42,10 @@ public class Deadline extends Task {
      *
      * @return the string representation of this task.
      */
+    @Override
     public String toString() {
         // Create format for toString method
-        DateTimeFormatter DISP = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
-        return "[D]" + super.toString() + " (by: " + due.format(DISP) + ")";
+        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+        return "[D]" + super.toString() + " (by: " + due.format(displayFormatter) + ")";
     }
 }

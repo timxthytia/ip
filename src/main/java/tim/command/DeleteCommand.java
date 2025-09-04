@@ -6,6 +6,10 @@ import tim.task.Task;
 import tim.task.TaskList;
 import tim.ui.Ui;
 
+/**
+ * Represents a command that deletes a task from the task list.
+ * The command takes an index and removes the corresponding task if it exists.
+ */
 public class DeleteCommand extends Command {
     private final int index;
 

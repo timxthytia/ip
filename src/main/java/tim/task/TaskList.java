@@ -5,7 +5,8 @@ import java.util.ArrayList;
 /**
  * Represents a list of tasks managed by the application.
  * Provides methods to add, remove, access, and query the size of the task list.
- * This class acts as a wrapper around an ArrayList<Task>.
+ * This class acts as a wrapper around an {@link java.util.ArrayList} of
+ * {@link tim.task.Task}.
  *
  */
 public class TaskList {
