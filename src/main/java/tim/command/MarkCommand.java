@@ -13,18 +13,33 @@ import tim.ui.Ui;
  */
 public class MarkCommand extends Command {
     private final int index;
+
+    /**
+     * Constructs a MarkCommand with the specified task index.
+     *
+     * @param index The 1-based index of the task to mark as done.
+     */
     public MarkCommand(int index) {
         this.index = index;
     }
+
+    /**
+     * Executes the command to mark a task as done.
+     *
+     * @param tasks   The list of tasks.
+     * @param ui      The user interface for displaying messages.
+     * @param storage The storage handler for saving the updated task list.
+     * @return A message indicating the task has been marked as done.
+     * @throws DukeException If the specified index is out of range.
+     */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
         if (index < 1 || index > tasks.size()) {
             throw new DukeException("OOPS!!! Task number out of range.");
         }
         Task done = tasks.get(index - 1);
         done.markAsDone();
         storage.save(tasks);
-        System.out.println("Nice! I've marked this task as done:");
-        System.out.println(" " + done);
+        return ui.showMark(done);
     }
 }

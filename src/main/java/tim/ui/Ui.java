@@ -1,101 +1,151 @@
-
 package tim.ui;
 
+import java.util.List;
 import java.util.Scanner;
 
 import tim.task.Task;
-import tim.task.TaskList;
 
 /**
- * Handles all user interactions with the chatbot.
- * Provides methods to display messages, errors, task lists, and other
- * user-facing outputs, as well as to read commands entered by the user.
+ * Handles interactions with the user via the command line interface (CLI).
+ * Provides methods to display messages and read commands from the user.
  */
 public class Ui {
-    private final Scanner sc;
+    private final Scanner scanner = new Scanner(System.in);
+
     /**
-     * Creates a Ui object to handle user input and output.
+     * Displays a line separator after a response for better readability.
      *
-     * @param sc Scanner used to read user commands from input.
+     * @return A string representing a line separator.
      */
-    public Ui(Scanner sc) {
-        this.sc = sc;
+    public String showLine() {
+        return "____________________________________________________________";
     }
 
     /**
-     * Displays the welcome message shown at the start of the program.
+     * Displays an error message when loading previous tasks fails.
+     *
+     * @return A string indicating the loading error.
      */
-    public void showWelcome() {
-        System.out.println("Hello I'm Tim");
-        System.out.println("What can I do for you?");
+    public String showLoadingError() {
+        return "OOPS!!! Couldn't load previous tasks, starting fresh.";
     }
 
     /**
-     * Reads the next line of user input.
+     * Displays a welcome message to the user.
      *
-     * @return the full user command entered.
+     * @return A string containing the welcome message.
+     */
+    public String showWelcome() {
+        return "Hello! I'm Tim\nWhat can I do for you?";
+    }
+
+    /**
+     * Reads a command from the user input.
+     *
+     * @return The next line of input from the user, or an empty string if no input is available.
      */
     public String readCommand() {
-        return sc.nextLine();
+        if (!scanner.hasNextLine()) {
+            return "";
+        }
+        return scanner.nextLine();
     }
 
     /**
-     * Displays a horizontal divider line to separate output blocks.
+     * Displays an exit message when the user quits the application.
+     *
+     * @return A string containing the exit message.
      */
-    public void showLine() {
-        System.out.println("____________________________________________________________");
+    public String showExit() {
+        return "Bye! Hope to see you again soon!";
     }
+
+    /**
+     * Displays the list of tasks to the user.
+     *
+     * @param tasks The list of tasks to be displayed.
+     * @return A formatted string listing all tasks.
+     */
+    public String showList(List<Task> tasks) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the tasks in your list:\n");
+        int i = 1;
+        for (Task task : tasks) {
+            sb.append(i).append(". ").append(task).append("\n");
+            i++;
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Displays a message indicating that a task has been marked as done.
+     *
+     * @param task The task that was marked.
+     * @return A string confirming the task has been marked.
+     */
+    public String showMark(Task task) {
+        return "I've marked this task as done:\n" + task;
+    }
+
+    /**
+     * Displays a message indicating that a task has been unmarked.
+     *
+     * @param task The task that was unmarked.
+     * @return A string confirming the task has been unmarked.
+     */
+    public String showUnmark(Task task) {
+        return "I've unmarked this task:\n" + task;
+    }
+
+    /**
+     * Displays a message indicating that a task has been deleted.
+     *
+     * @param task The task that was deleted.
+     * @param size The new size of the task list after deletion.
+     * @return A string confirming the task has been removed and showing the updated task count.
+     */
+    public String showDelete(Task task, int size) {
+        return "I've removed this task:\n" + task + "\nNow you have " + size + " tasks in the list.";
+    }
+
+    /**
+     * Displays the list of tasks that match a search query.
+     *
+     * @param tasks The list of matching tasks.
+     * @return A formatted string listing the matching tasks or a message if none found.
+     */
+    public String showFind(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return "No matching tasks found.";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the matching tasks in your list:\n");
+        int i = 1;
+        for (Task task : tasks) {
+            sb.append(i).append(". ").append(task).append("\n");
+            i++;
+        }
+        return sb.toString().trim();
+    }
+
     /**
      * Displays an error message.
      *
-     * @param msg the error message to display.
+     * @param message The error message to display.
+     * @return The error message string.
      */
-    public void showError(String msg) {
-        System.out.println(" " + msg);
+    public String showError(String message) {
+        return message;
     }
+
     /**
-     * Displays an error message when tasks cannot be loaded from storage.
-     */
-    public void showLoadingError() {
-        System.out.println(" OOPS!!! Couldn't load previous tasks, starting fresh.");
-    }
-    /**
-     * Displays the list of tasks currently stored.
+     * Displays a message indicating that a task has been added.
      *
-     * @param tasks the list of tasks to display.
+     * @param task The task that was added.
+     * @param size The new size of the task list after addition.
+     * @return A string confirming the task has been added and showing the updated task count.
      */
-    public void showList(TaskList tasks) {
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(" " + (i + 1) + "." + tasks.get(i));
-        }
-    }
-    /**
-     * Displays a confirmation message after a task has been added.
-     *
-     * @param t the task that was added.
-     * @param tasks the updated task list.
-     */
-    public void showAdded(Task t, TaskList tasks) {
-        System.out.println("Got it. I've added this task:");
-        System.out.println(" " + t);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-    }
-    /**
-     * Displays a confirmation message after a task has been removed.
-     *
-     * @param t the task that was removed.
-     * @param tasks the updated task list.
-     */
-    public void showRemoved(Task t, TaskList tasks) {
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + t);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-    }
-    /**
-     * Displays the farewell message when the program exits.
-     */
-    public void showBye() {
-        System.out.println("Bye! Hope to see you again soon!");
+    public String showAdd(Task task, int size) {
+        return "Got it. I've added this task:\n" + task + "\nNow you have " + size + " tasks in the list.";
     }
 }

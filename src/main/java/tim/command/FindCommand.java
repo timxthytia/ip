@@ -13,12 +13,25 @@ import tim.ui.Ui;
 public class FindCommand extends Command {
     private final String keyword;
 
+    /**
+     * Constructs a FindCommand with the specified keyword.
+     *
+     * @param keyword the keyword to search for within tasks
+     */
     public FindCommand(String keyword) {
         this.keyword = keyword;
     }
 
+    /**
+     * Executes the find command by searching for tasks containing the keyword.
+     *
+     * @param tasks   the list of tasks to search through
+     * @param ui      the user interface to display results
+     * @param storage the storage system (not used in this command)
+     * @return a string containing the matched tasks or a message if no matches are found
+     */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
         ArrayList<Task> matches = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
             Task t = tasks.get(i);
@@ -28,12 +41,9 @@ public class FindCommand extends Command {
         }
 
         if (matches.isEmpty()) {
-            System.out.println("No matching tasks found for keyword: " + keyword);
+            return "No matching tasks found for keyword: " + keyword;
         } else {
-            System.out.println("Here are the matching tasks in your list:");
-            for (int i = 0; i < matches.size(); i++) {
-                System.out.println(" " + (i + 1) + "." + matches.get(i));
-            }
+            return ui.showFind(matches);
         }
     }
 }

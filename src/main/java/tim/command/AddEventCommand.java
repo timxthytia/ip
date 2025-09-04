@@ -30,11 +30,21 @@ public class AddEventCommand extends Command {
         this.end = end;
     }
 
+    /**
+     * Creates a new Event task, adds it to the task list, saves the updated list to storage,
+     * and returns a confirmation message through the Ui.
+     *
+     * @param tasks the TaskList to which the new Event will be added
+     * @param ui the Ui instance used to generate user interface messages
+     * @param storage the Storage instance responsible for saving the task list
+     * @return a confirmation message as a String indicating the Event has been added
+     * @throws RuntimeException if saving the task list to storage fails
+     */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
         Task newTask = new Event(desc, start, end);
         tasks.add(newTask);
         storage.save(tasks);
-        ui.showAdded(newTask, tasks);
+        return ui.showAdd(newTask, tasks.size());
     }
 }

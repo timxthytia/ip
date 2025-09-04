@@ -20,11 +20,9 @@ import tim.task.Todo;
 
 /**
  * Handles reading and writing tasks to a save file on disk.
- * <p>
  * The Storage class is responsible for persisting the user's task list across program runs.
  * It loads tasks from the given file when the application starts, and saves the current tasks
  * back to the file whenever changes are made.
- * </p>
  */
 public class Storage {
     private final Path dataDir;
@@ -43,10 +41,8 @@ public class Storage {
 
     /**
      * Loads tasks from the data file into a TaskList.
-     * <p>
      * If the file or its parent directory does not exist, this method will create the directory
      * and return an empty TaskList.
-     * </p>
      *
      * @return a TaskList containing the tasks loaded from file.
      * @throws DukeException if an I/O error occurs or if the data file cannot be created.

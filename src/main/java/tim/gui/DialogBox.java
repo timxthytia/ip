@@ -1,0 +1,71 @@
+package tim.gui;
+
+import java.io.IOException;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+
+/**
+ * This control contains a dialog box consisting of an ImageView to represent the speaker's face
+ * and a label containing text from the speaker.
+ */
+public class DialogBox extends HBox {
+    @FXML
+    private Label dialog;
+    @FXML
+    private ImageView displayPicture;
+
+    private DialogBox(String text, Image img) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view/DialogBox.fxml"));
+            fxmlLoader.setRoot(this);
+            fxmlLoader.setController(this);
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        dialog.setText(text);
+        displayPicture.setImage(img);
+    }
+
+    /**
+     * Flips the dialog box such that the ImageView is on the left and text on the right.
+     */
+    private void flip() {
+        this.setAlignment(Pos.TOP_LEFT);
+        var tmp = dialog.getText();
+        dialog.setText(tmp);
+        getChildren().clear();
+        getChildren().addAll(displayPicture, dialog);
+    }
+
+    /**
+     * Creates a dialog box for user input.
+     *
+     * @param text The text to display.
+     * @param img The user's display picture.
+     * @return A DialogBox for user input.
+     */
+    public static DialogBox getUserDialog(String text, Image img) {
+        return new DialogBox(text, img);
+    }
+
+    /**
+     * Creates a dialog box for Tim's responses.
+     *
+     * @param text The text to display.
+     * @param img Tim's display picture.
+     * @return A DialogBox for Tim's response.
+     */
+    public static DialogBox getTimDialog(String text, Image img) {
+        var db = new DialogBox(text, img);
+        db.flip();
+        return db;
+    }
+}

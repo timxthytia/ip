@@ -3,7 +3,7 @@ package tim.task;
 /**
  * Represents a generic task in the task list.
  * A task has a description and a completion status. This class serves as the base
- * class for more specific task subclasses
+ * class for more specific task subclasses to inherit.
  *
  */
 public class Task {

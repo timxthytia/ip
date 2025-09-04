@@ -14,14 +14,15 @@ import tim.ui.Ui;
  */
 public abstract class Command {
     /**
-     * Executes the command with access to the current task list, user interface, and storage.
+     * Executes the command with access to the current task list, user interface, and storage,
+     * and returns a response String for GUI.
      *
      * @param tasks the TaskList containing current tasks.
      * @param ui the Ui object for interacting with the user.
      * @param storage the Storage used to save or load tasks.
      * @throws DukeException if an error occurs during execution.
      */
-    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws DukeException;
+    public abstract String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException;
 
     /**
      * Indicates whether this command will cause the program to exit.

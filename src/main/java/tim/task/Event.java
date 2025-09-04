@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
  * Represents a scheduled event task.
  * Stores the task description, a start date/time, and an end date/time.
  * Provides methods to format the event for storage and for user-friendly display.
- *
  */
 public class Event extends Task {
     private final LocalDateTime start;

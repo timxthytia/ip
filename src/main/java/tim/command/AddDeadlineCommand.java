@@ -27,11 +27,19 @@ public class AddDeadlineCommand extends Command {
         this.due = due;
     }
 
+    /**
+     * Adds a new Deadline task to the task list, saves the updated list, and returns a confirmation message.
+     *
+     * @param tasks the current list of tasks
+     * @param ui the user interface for displaying messages
+     * @param storage the storage system to save tasks
+     * @return a confirmation message of the added task
+     */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
         Task newTask = new Deadline(desc, due);
         tasks.add(newTask);
         storage.save(tasks);
-        ui.showAdded(newTask, tasks);
+        return ui.showAdd(newTask, tasks.size());
     }
 }
