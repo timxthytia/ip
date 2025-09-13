@@ -8,7 +8,7 @@ package tim.task;
  */
 public class Task {
     protected String description;
-    protected boolean completed;
+    protected boolean isCompleted;
 
     /**
      * Creates a new Task with the specified description.
@@ -18,21 +18,21 @@ public class Task {
      */
     Task(String description) {
         this.description = description;
-        this.completed = false;
+        this.isCompleted = false;
     }
 
     /**
      * Marks this task as completed.
      */
     public void markAsDone() {
-        this.completed = true;
+        this.isCompleted = true;
     }
 
     /**
      * Marks this task as not completed.
      */
     public void markAsUndone() {
-        this.completed = false;
+        this.isCompleted = false;
     }
 
     /**
@@ -42,7 +42,7 @@ public class Task {
      * @return the storage string representation of the task.
      */
     public String toStorageString() {
-        return "? | " + (completed ? "1" : "0") + " | " + description;
+        return "? | " + (isCompleted ? "1" : "0") + " | " + description;
     }
 
     /**
@@ -51,7 +51,7 @@ public class Task {
      * @return "X" if the task is completed, otherwise a space character.
      */
     protected String getStatusIcon() {
-        return (completed ? "X" : " ");
+        return (isCompleted ? "X" : " ");
     }
 
     /**

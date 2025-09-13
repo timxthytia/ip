@@ -1,6 +1,6 @@
 package tim.command;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.storage.Storage;
 import tim.task.Task;
 import tim.task.TaskList;
@@ -31,12 +31,12 @@ public class AddTodoCommand extends Command {
      * @param ui      The user interface for interaction.
      * @param storage The storage handler for saving tasks.
      * @return A confirmation message indicating the task was added.
-     * @throws DukeException If the description is empty or saving fails.
+     * @throws TimException If the description is empty or saving fails.
      */
     @Override
-    public String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws TimException {
         if (desc.isBlank()) {
-            throw new DukeException("OOPS!!! The description of a todo cannot be empty.");
+            throw new TimException("OOPS!!! The description of a todo cannot be empty.");
         }
         Task newTask = new Todo(desc);
         tasks.add(newTask);

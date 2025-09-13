@@ -1,6 +1,6 @@
 package tim.command;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.storage.Storage;
 import tim.task.Task;
 import tim.task.TaskList;
@@ -30,12 +30,12 @@ public class UnmarkCommand extends Command {
      * @param ui the user interface to interact with the user
      * @param storage the storage to save the updated task list
      * @return a message indicating the task has been unmarked
-     * @throws DukeException if the task index is out of range
+     * @throws TimException if the task index is out of range
      */
     @Override
-    public String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws TimException {
         if (index < 1 || index > tasks.size()) {
-            throw new DukeException("OOPS!!! Task number out of range.");
+            throw new TimException("OOPS!!! Task number out of range.");
         }
         Task undone = tasks.get(index - 1);
         undone.markAsUndone();

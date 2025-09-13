@@ -15,7 +15,7 @@ import tim.command.FindCommand;
 import tim.command.ListCommand;
 import tim.command.MarkCommand;
 import tim.command.UnmarkCommand;
-import tim.exception.DukeException;
+import tim.exception.TimException;
 
 /**
  * Responsible for interpreting user input and converting it into commands.
@@ -37,7 +37,9 @@ public class Parser {
      * @throws IllegalArgumentException if the input cannot be parsed.
      */
     public static LocalDateTime parseStrictDateOrDateTime(String s) {
+        assert s != null : "Parser.parseStrictDateOrDateTime: input is null";
         String trimmed = s.trim();
+        assert !trimmed.isEmpty() : "Parser.parseStrictDateOrDateTime: input is blank";
         try {
             return LocalDateTime.parse(trimmed, INPUT_DATE_TIME);
         } catch (DateTimeParseException ignored) {
@@ -63,9 +65,10 @@ public class Parser {
      *
      * @param input the full command entered by the user.
      * @return the corresponding Command object.
-     * @throws DukeException if the command is invalid or cannot be understood.
+     * @throws TimException if the command is invalid or cannot be understood.
      */
-    public static Command parse(String input) throws DukeException {
+    public static Command parse(String input) throws TimException {
+        assert input != null : "Parser.parse: input is null";
         if (input.equals("list")) {
             return new ListCommand();
         } else if (input.startsWith("mark ")) {
@@ -81,14 +84,14 @@ public class Parser {
         } else if (input.startsWith("event")) {
             return parseEvent(input);
         } else if (input.equals("delete")) {
-            throw new DukeException("OOPS!!! Provide a task number.");
+            throw new TimException("OOPS!!! Provide a task number.");
         } else if (input.startsWith("delete ")) {
             return new DeleteCommand(parseIndex(input.substring(7)));
         } else if (input.startsWith("find ")) {
             String keyword = input.substring(5).trim();
             return new FindCommand(keyword);
         }
-        throw new DukeException("OOPS!!! I'm sorry, but I don't know what that means :-(");
+        throw new TimException("OOPS!!! I'm sorry, but I don't know what that means :-(");
     }
 
     /**
@@ -96,17 +99,18 @@ public class Parser {
      *
      * @param s the string containing the index.
      * @return the parsed integer index.
-     * @throws DukeException if the input is blank or not a valid integer.
+     * @throws TimException if the input is blank or not a valid integer.
      */
-    private static int parseIndex(String s) throws DukeException {
+    private static int parseIndex(String s) throws TimException {
+        assert s != null : "Parser.parseIndex: input is null";
         String t = s.trim();
         if (t.isBlank()) {
-            throw new DukeException("OOPS!!! Provide a task number.");
+            throw new TimException("OOPS!!! Provide a task number.");
         }
         try {
             return Integer.parseInt(t);
         } catch (NumberFormatException e) {
-            throw new DukeException("OOPS!!! Task number must be an integer.");
+            throw new TimException("OOPS!!! Task number must be an integer.");
         }
     }
 
@@ -115,16 +119,17 @@ public class Parser {
      *
      * @param input the full deadline command entered by the user.
      * @return the AddDeadlineCommand created from the input.
-     * @throws DukeException if the input format is invalid or the date cannot be parsed.
+     * @throws TimException if the input format is invalid or the date cannot be parsed.
      */
-    private static Command parseDeadline(String input) throws DukeException {
+    private static Command parseDeadline(String input) throws TimException {
+        assert input != null : "Parser.parseDeadline: input is null";
         String body = input.substring("deadline".length()).trim();
         if (!body.contains("/by")) {
-            throw new DukeException("Deadline format: deadline <desc> /by <due date>.");
+            throw new TimException("Deadline format: deadline <desc> /by <due date>.");
         }
         String[] parts = body.split("/by", 2);
         if (parts.length < 2 || parts[0].trim().isBlank() || parts[1].trim().isBlank()) {
-            throw new DukeException("Deadline format: deadline <desc> /by <due date>.");
+            throw new TimException("Deadline format: deadline <desc> /by <due date>.");
         }
         String desc = parts[0].trim();
         String date = parts[1].trim();
@@ -132,8 +137,9 @@ public class Parser {
         try {
             dueDateTime = parseStrictDateOrDateTime(date);
         } catch (IllegalArgumentException ex) {
-            throw new DukeException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
+            throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
         }
+        assert dueDateTime != null : "Parser.parseDeadline: dueDateTime is null";
         return new AddDeadlineCommand(desc, dueDateTime);
     }
 
@@ -142,26 +148,27 @@ public class Parser {
      *
      * @param input the full event command entered by the user.
      * @return the AddEventCommand created from the input.
-     * @throws DukeException if the input format is invalid or the dates cannot be parsed.
+     * @throws TimException if the input format is invalid or the dates cannot be parsed.
      */
-    private static Command parseEvent(String input) throws DukeException {
+    private static Command parseEvent(String input) throws TimException {
+        assert input != null : "Parser.parseEvent: input is null";
         String body = input.substring("event".length()).trim();
         if (!body.contains("/from") || !body.contains("/to")) {
-            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
         }
         String[] dateSplit = body.split("/from", 2);
         if (dateSplit.length < 2) {
-            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
         }
         String desc = dateSplit[0].trim();
         String[] toSplit = dateSplit[1].split("/to", 2);
         if (toSplit.length < 2) {
-            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
         }
         String start = toSplit[0].trim();
         String end = toSplit[1].trim();
         if (desc.isBlank() || start.isBlank() || end.isBlank()) {
-            throw new DukeException("Event format: event <desc> /from <start> /to <end>.");
+            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
         }
 
         LocalDateTime startDT;
@@ -170,8 +177,11 @@ public class Parser {
             startDT = parseStrictDateOrDateTime(start);
             endDT = parseStrictDateOrDateTime(end);
         } catch (IllegalArgumentException ex) {
-            throw new DukeException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
+            throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
         }
+        assert startDT != null : "Parser.parseEvent: startDT is null";
+        assert endDT != null : "Parser.parseEvent: endDT is null";
+        assert !endDT.isBefore(startDT) : "Parser.parseEvent: end before start";
         return new AddEventCommand(desc, startDT, endDT);
     }
 }
