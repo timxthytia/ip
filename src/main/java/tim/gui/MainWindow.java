@@ -4,16 +4,15 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import tim.app.Tim;
 import tim.reminder.ReminderService;
+import tim.reminder.ReminderService.ReminderEvent;
 
 
 /** Controller for MainWindow.fxml. Handles initialization and user interactions. */
@@ -22,8 +21,7 @@ public class MainWindow extends AnchorPane {
     @FXML private VBox dialogContainer;
     @FXML private TextField userInput;
     @FXML private Button sendButton;
-    @FXML private HBox reminderBar;
-    @FXML private Label reminderLabel;
+    @FXML private ReminderBox reminderBox;
     private ReminderService reminderService;
 
     private Tim tim;
@@ -37,12 +35,13 @@ public class MainWindow extends AnchorPane {
     private void initialize() {
         // Auto-scroll to the bottom when new messages arrive
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        getStyleClass().add("root-pane");
         dialogContainer.getChildren().add(
                 DialogBox.getTimDialog("Welcome to Tim! How can I help you today?", timImage)
         );
-        if (reminderBar != null) {
-            reminderBar.setVisible(false);
-            reminderBar.setManaged(false);
+        if (reminderBox != null) {
+            reminderBox.setVisible(false);
+            reminderBox.setManaged(false);
         }
     }
 
@@ -54,22 +53,25 @@ public class MainWindow extends AnchorPane {
         this.tim = tim;
         // Wire and start reminder scanning based on current tasks
         reminderService = new ReminderService(this.tim.getTaskList(),
-                evt -> showReminder(evt.getTaskLabel()));
+                this::showReminder);
         reminderService.start();
     }
 
     /**
-     * Displays a reminder message in the top reminder bar.
-     * This method is safe to call from any thread.
+     * Displays a reminder message in the ReminderBox.
+     * Safe to call from any thread.
      */
-    private void showReminder(String message) {
-        if (reminderBar == null || reminderLabel == null) {
-            return; // Fallback if FXML nodes are not present
+    private void showReminder(ReminderEvent evt) {
+        if (reminderBox == null) {
+            return; // Fallback if FXML node is not present
         }
         Platform.runLater(() -> {
-            reminderLabel.setText(message);
-            reminderBar.setVisible(true);
-            reminderBar.setManaged(true);
+            reminderBox.show(evt.getTaskLabel(), () -> {
+                if (reminderService != null) {
+                    // Dismiss the event.
+                    reminderService.dismiss(evt);
+                }
+            });
         });
     }
 

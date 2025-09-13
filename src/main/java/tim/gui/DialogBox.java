@@ -53,7 +53,9 @@ public class DialogBox extends HBox {
      * @return A DialogBox for user input.
      */
     public static DialogBox getUserDialog(String text, Image img) {
-        return new DialogBox(text, img);
+        DialogBox db = new DialogBox(text, img);
+        db.getStyleClass().add("user-bubble");
+        return db;
     }
 
     /**
@@ -64,7 +66,8 @@ public class DialogBox extends HBox {
      * @return A DialogBox for Tim's response.
      */
     public static DialogBox getTimDialog(String text, Image img) {
-        var db = new DialogBox(text, img);
+        DialogBox db = new DialogBox(text, img);
+        db.getStyleClass().add("tim-bubble");
         db.flip();
         return db;
     }

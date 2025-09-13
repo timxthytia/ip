@@ -7,3 +7,4 @@ D | 1 | deadlineTest2 | 2025-09-13T20:00:00
 D | 0 | reminderTask1 | 2025-09-13T23:59:00
 D | 0 | reminderTest2 | 2025-09-13T12:00:00
 D | 0 | reminderTest3 | 2025-09-13T12:00:00
+E | 1 | eventReminderTest | 2025-09-13T23:59:00 to 2025-09-14T01:00:00

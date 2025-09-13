@@ -1,0 +1,59 @@
+/* ===== Global / Root ===== */
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-base: #f7f7f9;
+    -fx-background-color: #f7f7f9;
+}
+
+/* ===== Main Window ===== */
+.root-pane {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+}
+
+#scrollPane {
+    -fx-background-color: transparent;
+}
+
+#dialogContainer {
+    -fx-spacing: 8;
+    -fx-padding: 10 12 10 12;
+}
+
+/* ===== Input Row ===== */
+#userInput {
+    -fx-background-radius: 6;
+    -fx-padding: 8 10 8 10;
+}
+
+#sendButton {
+    -fx-background-radius: 6;
+    -fx-font-weight: bold;
+}
+
+/* ===== Reminder Box (custom control) ===== */
+.reminder-box {
+    -fx-background-color: #fff4ce;
+    -fx-border-color: #e0c97a;
+    -fx-border-width: 1;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.reminder-box .button {
+    -fx-background-color: #f0b429;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+}
+
+/* ===== Dialog bubbles ===== */
+.user-bubble {
+    -fx-background-radius: 0;
+}
+
+.tim-bubble {
+    -fx-background-radius: 0;
+}
+
+.dialog-box {
+    -fx-spacing: 12;
+}
