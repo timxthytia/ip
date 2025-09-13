@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.task.Deadline;
 import tim.task.Event;
 import tim.task.TaskList;
@@ -29,11 +29,11 @@ public class StorageTest {
      *
      * @param tempDir a temporary directory provided by JUnit for file I/O
      * @throws IOException if an I/O error occurs during save or load
-     * @throws DukeException if parsing or storage operations fail
+     * @throws TimException if parsing or storage operations fail
      */
     @Test
     @DisplayName("save() then load() round-trips tasks (Todo, Deadline, Event)")
-    void saveThenLoad_roundTrip(@TempDir Path tempDir) throws IOException, DukeException {
+    void saveThenLoad_roundTrip(@TempDir Path tempDir) throws IOException, TimException {
         Path dataFile = tempDir.resolve("tim.text");
         Storage storage = new Storage(dataFile.toString());
 
@@ -71,11 +71,11 @@ public class StorageTest {
      * instead of throwing an exception.
      *
      * @param tempDir a temporary directory provided by JUnit for file I/O
-     * @throws DukeException if the load operation fails unexpectedly
+     * @throws TimException if the load operation fails unexpectedly
      */
     @Test
     @DisplayName("load() handles missing file: returns empty list")
-    void load_missingFile(@TempDir Path tempDir) throws DukeException {
+    void load_missingFile(@TempDir Path tempDir) throws TimException {
         Path dataFile = tempDir.resolve("tim.text");
         Storage storage = new Storage(dataFile.toString());
         TaskList list = storage.load();

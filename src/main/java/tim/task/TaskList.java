@@ -25,6 +25,7 @@ public class TaskList {
      * @param tasks the existing list of tasks to initialise with, or null for empty.
      */
     public TaskList(ArrayList<Task> tasks) { //Overloaded constructor
+        assert tasks == null || tasks.stream().allMatch(t -> t != null) : "Task list must not contain null elements";
         this.tasks = tasks != null ? tasks : new ArrayList<>();
     }
 
@@ -34,7 +35,9 @@ public class TaskList {
      * @return the size of the task list.
      */
     public int size() {
-        return tasks.size();
+        int result = tasks.size();
+        assert result >= 0 : "Task list size must not be negative";
+        return result;
     }
 
     /**
@@ -44,6 +47,7 @@ public class TaskList {
      * @return the Task at the given index.
      */
     public Task get(int idx) {
+        assert idx >= 0 && idx < tasks.size() : "Index out of bounds";
         return tasks.get(idx);
     }
 
@@ -53,6 +57,7 @@ public class TaskList {
      * @param t the task to add.
      */
     public void add(Task t) {
+        assert t != null : "Task to add must not be null";
         this.tasks.add(t);
     }
 
@@ -63,6 +68,7 @@ public class TaskList {
      * @return the removed Task.
      */
     public Task remove(int idx) {
+        assert idx >= 0 && idx < tasks.size() : "Index out of bounds";
         return tasks.remove(idx);
     }
 

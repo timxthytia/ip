@@ -1,7 +1,7 @@
 package tim.app;
 
 import tim.command.Command;
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.parser.Parser;
 import tim.storage.Storage;
 import tim.task.TaskList;
@@ -22,14 +22,16 @@ public class Tim {
      */
     public Tim(String dataFilePath) {
         this.storage = new Storage(dataFilePath);
+        assert this.storage != null : "Storage should not be null after initialization.";
         TaskList loaded;
         try {
             loaded = storage.load();
-        } catch (DukeException e) {
+        } catch (TimException e) {
             // Start with an empty list if loading fails
             loaded = new TaskList();
         }
         this.tasks = loaded;
+        assert this.tasks != null : "Tasks should not be null after loading.";
     }
 
     /**
@@ -42,9 +44,11 @@ public class Tim {
     public String getResponse(String input) {
         try {
             Command c = Parser.parse(input);
+            assert c != null : "Command should not be null after parsing.";
             Ui ui = new Ui();
+            assert ui != null : "Ui should not be null after creation.";
             return c.execute(tasks, ui, storage);
-        } catch (DukeException e) {
+        } catch (TimException e) {
             return e.getMessage();
         }
     }

@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.parser.Parser;
 import tim.task.Deadline;
 import tim.task.Event;
@@ -45,9 +45,9 @@ public class Storage {
      * and return an empty TaskList.
      *
      * @return a TaskList containing the tasks loaded from file.
-     * @throws DukeException if an I/O error occurs or if the data file cannot be created.
+     * @throws TimException if an I/O error occurs or if the data file cannot be created.
      */
-    public TaskList load() throws DukeException {
+    public TaskList load() throws TimException {
         TaskList list = new TaskList(new ArrayList<>());
         if (!Files.exists(dataFile)) {
             try {
@@ -55,7 +55,7 @@ public class Storage {
                     Files.createDirectories(dataDir);
                 }
             } catch (IOException ioe) {
-                throw new DukeException("Could not create data directory: " + ioe.getMessage());
+                throw new TimException("Could not create data directory: " + ioe.getMessage());
             }
             return list;
         }
@@ -103,7 +103,7 @@ public class Storage {
                 list.add(t);
             }
         } catch (IOException ioe) {
-            throw new DukeException("Could not load tasks: " + ioe.getMessage());
+            throw new TimException("Could not load tasks: " + ioe.getMessage());
         }
         return list;
     }

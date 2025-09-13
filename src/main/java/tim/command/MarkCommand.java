@@ -1,6 +1,6 @@
 package tim.command;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.storage.Storage;
 import tim.task.Task;
 import tim.task.TaskList;
@@ -30,12 +30,12 @@ public class MarkCommand extends Command {
      * @param ui      The user interface for displaying messages.
      * @param storage The storage handler for saving the updated task list.
      * @return A message indicating the task has been marked as done.
-     * @throws DukeException If the specified index is out of range.
+     * @throws TimException If the specified index is out of range.
      */
     @Override
-    public String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws TimException {
         if (index < 1 || index > tasks.size()) {
-            throw new DukeException("OOPS!!! Task number out of range.");
+            throw new TimException("OOPS!!! Task number out of range.");
         }
         Task done = tasks.get(index - 1);
         done.markAsDone();
