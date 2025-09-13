@@ -1,7 +1,7 @@
 package tim.app;
 
 import tim.command.Command;
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.parser.Parser;
 import tim.storage.Storage;
 import tim.task.TaskList;
@@ -25,7 +25,7 @@ public class Tim {
         TaskList loaded;
         try {
             loaded = storage.load();
-        } catch (DukeException e) {
+        } catch (TimException e) {
             // Start with an empty list if loading fails
             loaded = new TaskList();
         }
@@ -44,7 +44,7 @@ public class Tim {
             Command c = Parser.parse(input);
             Ui ui = new Ui();
             return c.execute(tasks, ui, storage);
-        } catch (DukeException e) {
+        } catch (TimException e) {
             return e.getMessage();
         }
     }

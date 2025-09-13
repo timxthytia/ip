@@ -6,13 +6,23 @@ package tim.exception;
  * loading or saving tasks, or parsing input.
  *
  */
-public class DukeException extends Exception {
+public class TimException extends Exception {
     /**
      * Constructs a new DukeException with the specified detail message.
      *
      * @param message the detail message describing the error.
      */
-    public DukeException(String message) {
+    public TimException(String message) {
         super(message);
+    }
+
+    /**
+     * Constructs a new TimException with the specified detail message and cause.
+     *
+     * @param message the detail message.
+     * @param cause the cause of this exception.
+     */
+    public TimException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

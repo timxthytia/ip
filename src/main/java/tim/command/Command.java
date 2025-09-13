@@ -1,6 +1,6 @@
 package tim.command;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.storage.Storage;
 import tim.task.TaskList;
 import tim.ui.Ui;
@@ -20,9 +20,9 @@ public abstract class Command {
      * @param tasks the TaskList containing current tasks.
      * @param ui the Ui object for interacting with the user.
      * @param storage the Storage used to save or load tasks.
-     * @throws DukeException if an error occurs during execution.
+     * @throws TimException if an error occurs during execution.
      */
-    public abstract String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException;
+    public abstract String execute(TaskList tasks, Ui ui, Storage storage) throws TimException;
 
     /**
      * Indicates whether this command will cause the program to exit.

@@ -1,6 +1,6 @@
 package tim.command;
 
-import tim.exception.DukeException;
+import tim.exception.TimException;
 import tim.storage.Storage;
 import tim.task.Task;
 import tim.task.TaskList;
@@ -29,12 +29,12 @@ public class DeleteCommand extends Command {
      * @param ui      The Ui instance for user interaction and message display.
      * @param storage The Storage instance for saving the updated task list.
      * @return A String message indicating the result of the delete operation.
-     * @throws DukeException If the provided index is out of range.
+     * @throws TimException If the provided index is out of range.
      */
     @Override
-    public String execute(TaskList tasks, Ui ui, Storage storage) throws DukeException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws TimException {
         if (index < 1 || index > tasks.size()) {
-            throw new DukeException("OOPS!!! Task number out of range.");
+            throw new TimException("OOPS!!! Task number out of range.");
         }
         Task removed = tasks.remove(index - 1);
         storage.save(tasks);
