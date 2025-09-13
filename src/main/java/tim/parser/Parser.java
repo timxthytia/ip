@@ -37,7 +37,9 @@ public class Parser {
      * @throws IllegalArgumentException if the input cannot be parsed.
      */
     public static LocalDateTime parseStrictDateOrDateTime(String s) {
+        assert s != null : "Parser.parseStrictDateOrDateTime: input is null";
         String trimmed = s.trim();
+        assert !trimmed.isEmpty() : "Parser.parseStrictDateOrDateTime: input is blank";
         try {
             return LocalDateTime.parse(trimmed, INPUT_DATE_TIME);
         } catch (DateTimeParseException ignored) {
@@ -66,6 +68,7 @@ public class Parser {
      * @throws TimException if the command is invalid or cannot be understood.
      */
     public static Command parse(String input) throws TimException {
+        assert input != null : "Parser.parse: input is null";
         if (input.equals("list")) {
             return new ListCommand();
         } else if (input.startsWith("mark ")) {
@@ -99,6 +102,7 @@ public class Parser {
      * @throws TimException if the input is blank or not a valid integer.
      */
     private static int parseIndex(String s) throws TimException {
+        assert s != null : "Parser.parseIndex: input is null";
         String t = s.trim();
         if (t.isBlank()) {
             throw new TimException("OOPS!!! Provide a task number.");
@@ -118,6 +122,7 @@ public class Parser {
      * @throws TimException if the input format is invalid or the date cannot be parsed.
      */
     private static Command parseDeadline(String input) throws TimException {
+        assert input != null : "Parser.parseDeadline: input is null";
         String body = input.substring("deadline".length()).trim();
         if (!body.contains("/by")) {
             throw new TimException("Deadline format: deadline <desc> /by <due date>.");
@@ -134,6 +139,7 @@ public class Parser {
         } catch (IllegalArgumentException ex) {
             throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
         }
+        assert dueDateTime != null : "Parser.parseDeadline: dueDateTime is null";
         return new AddDeadlineCommand(desc, dueDateTime);
     }
 
@@ -145,6 +151,7 @@ public class Parser {
      * @throws TimException if the input format is invalid or the dates cannot be parsed.
      */
     private static Command parseEvent(String input) throws TimException {
+        assert input != null : "Parser.parseEvent: input is null";
         String body = input.substring("event".length()).trim();
         if (!body.contains("/from") || !body.contains("/to")) {
             throw new TimException("Event format: event <desc> /from <start> /to <end>.");
@@ -172,6 +179,9 @@ public class Parser {
         } catch (IllegalArgumentException ex) {
             throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
         }
+        assert startDT != null : "Parser.parseEvent: startDT is null";
+        assert endDT != null : "Parser.parseEvent: endDT is null";
+        assert !endDT.isBefore(startDT) : "Parser.parseEvent: end before start";
         return new AddEventCommand(desc, startDT, endDT);
     }
 }

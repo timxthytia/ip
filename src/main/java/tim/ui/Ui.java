@@ -13,15 +13,6 @@ public class Ui {
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Displays a line separator after a response for better readability.
-     *
-     * @return A string representing a line separator.
-     */
-    public String showLine() {
-        return "____________________________________________________________";
-    }
-
-    /**
      * Displays an error message when loading previous tasks fails.
      *
      * @return A string indicating the loading error.
@@ -45,6 +36,7 @@ public class Ui {
      * @return The next line of input from the user, or an empty string if no input is available.
      */
     public String readCommand() {
+        assert scanner != null : "scanner must be initialized";
         if (!scanner.hasNextLine()) {
             return "";
         }
@@ -67,10 +59,12 @@ public class Ui {
      * @return A formatted string listing all tasks.
      */
     public String showList(List<Task> tasks) {
+        assert tasks != null : "tasks list must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append("Here are the tasks in your list:\n");
         int i = 1;
         for (Task task : tasks) {
+            assert task != null : "task in list must not be null";
             sb.append(i).append(". ").append(task).append("\n");
             i++;
         }
@@ -84,6 +78,7 @@ public class Ui {
      * @return A string confirming the task has been marked.
      */
     public String showMark(Task task) {
+        assert task != null : "task must not be null";
         return "I've marked this task as done:\n" + task;
     }
 
@@ -94,6 +89,7 @@ public class Ui {
      * @return A string confirming the task has been unmarked.
      */
     public String showUnmark(Task task) {
+        assert task != null : "task must not be null";
         return "I've unmarked this task:\n" + task;
     }
 
@@ -105,6 +101,8 @@ public class Ui {
      * @return A string confirming the task has been removed and showing the updated task count.
      */
     public String showDelete(Task task, int size) {
+        assert task != null : "task must not be null";
+        assert size >= 0 : "size must not be negative";
         return "I've removed this task:\n" + task + "\nNow you have " + size + " tasks in the list.";
     }
 
@@ -115,6 +113,7 @@ public class Ui {
      * @return A formatted string listing the matching tasks or a message if none found.
      */
     public String showFind(List<Task> tasks) {
+        assert tasks != null : "tasks list must not be null";
         if (tasks.isEmpty()) {
             return "No matching tasks found.";
         }
@@ -122,6 +121,7 @@ public class Ui {
         sb.append("Here are the matching tasks in your list:\n");
         int i = 1;
         for (Task task : tasks) {
+            assert task != null : "task in list must not be null";
             sb.append(i).append(". ").append(task).append("\n");
             i++;
         }
@@ -135,6 +135,7 @@ public class Ui {
      * @return The error message string.
      */
     public String showError(String message) {
+        assert message != null : "error message must not be null";
         return message;
     }
 
@@ -146,6 +147,8 @@ public class Ui {
      * @return A string confirming the task has been added and showing the updated task count.
      */
     public String showAdd(Task task, int size) {
+        assert task != null : "task must not be null";
+        assert size >= 0 : "size must not be negative";
         return "Got it. I've added this task:\n" + task + "\nNow you have " + size + " tasks in the list.";
     }
 }

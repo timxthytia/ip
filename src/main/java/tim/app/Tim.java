@@ -22,6 +22,7 @@ public class Tim {
      */
     public Tim(String dataFilePath) {
         this.storage = new Storage(dataFilePath);
+        assert this.storage != null : "Storage should not be null after initialization.";
         TaskList loaded;
         try {
             loaded = storage.load();
@@ -30,6 +31,7 @@ public class Tim {
             loaded = new TaskList();
         }
         this.tasks = loaded;
+        assert this.tasks != null : "Tasks should not be null after loading.";
     }
 
     /**
@@ -42,7 +44,9 @@ public class Tim {
     public String getResponse(String input) {
         try {
             Command c = Parser.parse(input);
+            assert c != null : "Command should not be null after parsing.";
             Ui ui = new Ui();
+            assert ui != null : "Ui should not be null after creation.";
             return c.execute(tasks, ui, storage);
         } catch (TimException e) {
             return e.getMessage();

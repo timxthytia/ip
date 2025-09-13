@@ -6,7 +6,6 @@ package tim.task;
  * class for more specific task subclasses to inherit.
  */
 public class Task {
-
     /** Storage delimiter used when serializing tasks. */
     protected static final String STORAGE_DELIM = " | ";
 
@@ -23,11 +22,11 @@ public class Task {
     /** Storage flag for incomplete status. */
     private static final String COMPLETED_FLAG_FALSE = "0";
 
+    /** Whether the task has been completed. */
+    protected boolean isCompleted;
+
     /** Human-readable description of the task. */
     private final String description;
-
-    /** Whether the task has been completed. */
-    private boolean completed;
 
     /**
      * Creates a new Task with the specified description.
@@ -41,21 +40,21 @@ public class Task {
             throw new IllegalArgumentException("Task description cannot be empty or blank.");
         }
         this.description = description;
-        this.completed = false;
+        this.isCompleted = false;
     }
 
     /**
      * Marks this task as completed.
      */
     public void markAsDone() {
-        this.completed = true;
+        this.isCompleted = true;
     }
 
     /**
      * Marks this task as not completed.
      */
     public void markAsUndone() {
-        this.completed = false;
+        this.isCompleted = false;
     }
 
     /**
@@ -73,7 +72,7 @@ public class Task {
      * @return true if completed; false otherwise.
      */
     public boolean isCompleted() {
-        return completed;
+        return isCompleted;
     }
 
     /**
@@ -93,14 +92,14 @@ public class Task {
      * @return "X" if the task is completed, otherwise a space character.
      */
     protected String getStatusIcon() {
-        return completed ? STATUS_DONE : STATUS_NOT_DONE;
+        return isCompleted ? STATUS_DONE : STATUS_NOT_DONE;
     }
 
     /**
      * Returns the flag used to represent completion status in storage.
      */
     private String getCompletedFlag() {
-        return completed ? COMPLETED_FLAG_TRUE : COMPLETED_FLAG_FALSE;
+        return isCompleted ? COMPLETED_FLAG_TRUE : COMPLETED_FLAG_FALSE;
     }
 
     /**
