@@ -1,9 +1,13 @@
 package tim.task;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 /**
  * Represents a generic task in the task list.
  * A task has a description and a completion status. This class serves as the base
  * class for more specific task subclasses to inherit.
+ * It also provides default hooks used by the reminder subsystem.
  */
 public class Task {
     /** Storage delimiter used when serializing tasks. */
@@ -41,6 +45,31 @@ public class Task {
         }
         this.description = description;
         this.isCompleted = false;
+    }
+
+    /**
+     * Returns the primary time at which a reminder should fire for this task, if any.
+     * <p>
+     * By default, generic tasks have no reminder trigger. Specific task types such as
+     * {@code Deadline} and {@code Event} should override this to return their due/start time.
+     *
+     * @return an {@link Optional} containing the trigger time, or {@link Optional#empty()} if none.
+     */
+    public Optional<LocalDateTime> getPrimaryTriggerTime() {
+        return Optional.empty();
+    }
+
+    /**
+     * Returns a stable identity string suitable for building reminder keys.
+     * <p>
+     * The default implementation uses the simple class name and the immutable description,
+     * and intentionally excludes the completion status so that marking a task done/undone
+     * does not change the identity used by the reminder system.
+     *
+     * @return a stable identity string for reminder de-duplication.
+     */
+    public String getReminderIdentityBase() {
+        return getClass().getSimpleName() + "|" + description;
     }
 
     /**

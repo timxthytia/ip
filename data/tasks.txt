@@ -1,7 +1,9 @@
-
 T | 0 | test4
-D | 0 | deadlineTest | 2025-09-05T00:00
-E | 0 | eventTest | 2025-09-05T11:00 to 2025-09-06T13:00
+D | 0 | deadlineTest | 2025-09-05T00:00:00
+E | 0 | eventTest | 2025-09-05T11:00:00 to 2025-09-06T13:00:00
 T | 1 | markTest
 T | 0 | unmarkTest
 D | 1 | deadlineTest2 | 2025-09-13T20:00:00
+D | 0 | reminderTask1 | 2025-09-13T23:59:00
+D | 0 | reminderTest2 | 2025-09-13T12:00:00
+D | 0 | reminderTest3 | 2025-09-13T12:00:00

@@ -2,6 +2,7 @@ package tim.task;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Represents a scheduled event task.
@@ -49,6 +50,24 @@ public class Event extends Task {
         }
         this.start = start;
         this.end = end;
+    }
+
+    /**
+     * Returns the primary trigger time for this event, typically used for reminders.
+     *
+     * @return an Optional containing the start time of the event
+     */
+    public Optional<LocalDateTime> getPrimaryTriggerTime() {
+        return Optional.of(start);
+    }
+
+    /**
+     * Returns the end time for this event.
+     *
+     * @return an Optional containing the end time of the event
+     */
+    public Optional<LocalDateTime> getEndTime() {
+        return Optional.of(end);
     }
 
     /**

@@ -2,6 +2,7 @@ package tim.task;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * Represents a task with a deadline.
@@ -39,6 +40,16 @@ public class Deadline extends Task {
             throw new IllegalArgumentException("Due date/time must not be null");
         }
         this.due = due;
+    }
+
+    @Override
+    public Optional<LocalDateTime> getPrimaryTriggerTime() {
+        return Optional.of(due);
+    }
+
+    @Override
+    public String getReminderIdentityBase() {
+        return "deadline:" + due.toString();
     }
 
     /**
