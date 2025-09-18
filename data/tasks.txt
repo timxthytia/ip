@@ -1,17 +1,13 @@
-T | 0 | test4
-D | 0 | deadlineTest | 2025-09-05T00:00:00
-E | 0 | eventTest | 2025-09-05T11:00:00 to 2025-09-06T13:00:00
-T | 1 | markTest
-T | 0 | unmarkTest
-D | 1 | deadlineTest2 | 2025-09-13T20:00:00
-D | 0 | reminderTask1 | 2025-09-13T23:59:00
-D | 0 | reminderTest2 | 2025-09-13T12:00:00
-D | 0 | reminderTest3 | 2025-09-13T12:00:00
-E | 1 | eventReminderTest | 2025-09-13T23:59:00 to 2025-09-14T01:00:00
-D | 0 | reminderTest2 | 2025-09-18T07:30:00
-T | 0 | addTodo
-E | 0 | eventReminderTest1 | 2025-09-18T08:00:00 to 2025-09-18T12:00:00
-D | 0 | deadlineReminderTest3 | 2025-09-18T08:06:00
-D | 0 | deadlineReminderTest4 | 2025-09-18T09:30:00
-D | 0 | test | 2025-09-18T15:48:00
-D | 0 | test2 | 2025-09-18T15:51:00
+T | 0 | read CS2103T notes
+T | 1 | buy groceries
+D | 0 | submit iP PR | 2025-09-20T23:59:00
+D | 1 | pay utilities | 2025-09-15T18:00:00
+E | 0 | project meeting | 2025-09-21T14:00:00 to 2025-09-21T16:00:00
+E | 0 | team standup | 2025-09-19T09:00:00 to 2025-09-19T09:30:00
+T | 0 | refactor Parser
+T | 0 | write JUnit tests
+D | 0 | renew domain | 2025-10-01T12:00:00
+E | 1 | family dinner | 2025-09-18T19:00:00 to 2025-09-18T21:00:00
+T | 1 | archive old logs
+D | 0 | backup photos | 2025-09-25T20:30:00
+D | 0 | submit screenshot with a reminder | 2025-09-18T15:59:00
