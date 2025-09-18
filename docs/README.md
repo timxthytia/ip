@@ -48,3 +48,4 @@ It helps users keep track of **todos, deadlines, and events**, and now supports 
 Clone the repository and run:
 ```bash
 ./gradlew run
+```
