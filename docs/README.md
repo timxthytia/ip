@@ -12,10 +12,10 @@ It helps users keep track of **todos, deadlines, and events**, and now supports 
   Example: `todo read book`
 
 - **Deadline** – tasks with a deadline  
-  Example: `deadline return book /by 15/12/2024 1800`
+  Example: `deadline return book /by 2025-12-20 1800`
 
 - **Event** – tasks with a start and end time  
-  Example: `event project meeting /from 20/12/2024 1400 /to 20/12/2024 1600`
+  Example: `event project meeting /from 2025-12-20 1400 /to 2025-12-20 1600`
 
 - **List all tasks** – `list`
 
