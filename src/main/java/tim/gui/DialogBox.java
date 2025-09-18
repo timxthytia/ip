@@ -9,17 +9,20 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 
 /**
  * This control contains a dialog box consisting of an ImageView to represent the speaker's face
- * and a label containing text from the speaker.
+ * and a label containing text from the speaker wrapped in a chat bubble.
  */
 public class DialogBox extends HBox {
     @FXML
     private Label dialog;
     @FXML
     private ImageView displayPicture;
+    @FXML
+    private VBox messageContainer;
 
     private DialogBox(String text, Image img) {
         try {
@@ -32,12 +35,12 @@ public class DialogBox extends HBox {
         }
 
         dialog.setText(text);
-        displayPicture.getStyleClass().add("profile-image");
+        dialog.getStyleClass().add("chat-text");
         displayPicture.setImage(img);
 
-        // Create circular clip - this actually makes it circular
+        // Create circular view for profile picture
         Circle clip = new Circle();
-        clip.setCenterX(49.5); // Half of 99px
+        clip.setCenterX(49.5);
         clip.setCenterY(49.5);
         clip.setRadius(49.5);
         displayPicture.setClip(clip);
@@ -48,18 +51,12 @@ public class DialogBox extends HBox {
      */
     private void flip() {
         this.setAlignment(Pos.TOP_LEFT);
-        var tmp = dialog.getText();
-        dialog.setText(tmp);
         getChildren().clear();
-        getChildren().addAll(displayPicture, dialog);
+        getChildren().addAll(displayPicture, messageContainer);
     }
 
     /**
      * Creates a dialog box for user input.
-     *
-     * @param text The text to display.
-     * @param img The user's display picture.
-     * @return A DialogBox for user input.
      */
     public static DialogBox getUserDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
@@ -69,14 +66,20 @@ public class DialogBox extends HBox {
 
     /**
      * Creates a dialog box for Tim's responses.
-     *
-     * @param text The text to display.
-     * @param img Tim's display picture.
-     * @return A DialogBox for Tim's response.
      */
     public static DialogBox getTimDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
         db.getStyleClass().add("tim-bubble");
+        db.flip();
+        return db;
+    }
+
+    /**
+     * Creates a dialog box for error messages with special red styling.
+     */
+    public static DialogBox getErrorDialog(String text, Image img) {
+        DialogBox db = new DialogBox(text, img);
+        db.getStyleClass().addAll("tim-bubble", "error-bubble");
         db.flip();
         return db;
     }

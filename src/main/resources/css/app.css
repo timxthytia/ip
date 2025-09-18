@@ -7,10 +7,14 @@
 
 /* ===== Main Window ===== */
 .root-pane {
-    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    -fx-background-color: #e8f4fd;
 }
 
 #scrollPane {
+    -fx-background-color: transparent;
+}
+
+#scrollPane .viewport {
     -fx-background-color: transparent;
 }
 
@@ -46,15 +50,65 @@
 }
 
 /* ===== Dialog bubbles ===== */
-.user-bubble {
-    -fx-background-radius: 0;
+/* Base chat bubble styling */
+.message-bubble {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18px;
+    -fx-padding: 12px 16px 12px 16px;
+    -fx-border-color: #e1e1e1;
+    -fx-border-width: 0.5px;
+    -fx-border-radius: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+    -fx-min-width: 120px;
+    -fx-max-width: 320px;
+    -fx-pref-width: -1;
 }
 
-.tim-bubble {
-    -fx-background-radius: 0;
+/* User message bubbles */
+.user-bubble .message-bubble {
+    -fx-background-color: #007aff;
+    -fx-border-color: #0056b3;
+    -fx-max-width: 350px;
 }
 
-.dialog-box {
-    -fx-spacing: 12;
+/* Tim message bubbles */
+.tim-bubble .message-bubble {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #d0d0d0;
+    -fx-max-width: 350px;
 }
 
+/* Error message bubbles */
+.error-bubble .message-bubble {
+    -fx-background-color: #ffebee !important;
+    -fx-border-color: #f44336 !important;
+    -fx-border-width: 1.5px !important;
+    -fx-effect: dropshadow(gaussian, rgba(244, 67, 54, 0.3), 4, 0, 0, 2);
+    -fx-max-width: 350px;
+}
+
+/* Text styling inside bubbles */
+.chat-text {
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+    -fx-text-alignment: left;
+}
+
+.user-bubble .chat-text {
+    -fx-text-fill: #ffffff;
+}
+
+.tim-bubble .chat-text {
+    -fx-text-fill: #000000;
+}
+
+.error-bubble .chat-text {
+    -fx-text-fill: #c62828 !important;
+    -fx-font-weight: bold;
+}
+
+/* Dialog box container styling */
+.user-bubble, .tim-bubble {
+    -fx-spacing: 12px;
+    -fx-padding: 8px;
+}

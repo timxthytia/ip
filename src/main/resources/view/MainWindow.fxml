@@ -9,17 +9,15 @@
             fx:controller="tim.gui.MainWindow"
             prefWidth="400.0" prefHeight="600.0"
             minWidth="300.0" minHeight="400.0"
-            stylesheets="@/css/app.css">
+            stylesheets="@/css/app.css"
+            styleClass="root-pane">
     <children>
-        <ReminderBox fx:id="reminderBox"
-                     AnchorPane.topAnchor="1.0"
-                     AnchorPane.leftAnchor="1.0"
-                     AnchorPane.rightAnchor="1.0"/>
-
+        <ReminderBox fx:id="reminderBox" AnchorPane.topAnchor="1.0"
+                     AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0"/>
         <ScrollPane fx:id="scrollPane"
                     hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                     fitToWidth="true"
-                    AnchorPane.topAnchor="30.0"
+                    AnchorPane.topAnchor="50.0"
                     AnchorPane.leftAnchor="5.0"
                     AnchorPane.rightAnchor="5.0"
                     AnchorPane.bottomAnchor="50.0">
@@ -28,17 +26,9 @@
             </content>
         </ScrollPane>
 
-        <HBox spacing="5.0"
-              AnchorPane.leftAnchor="5.0"
-              AnchorPane.rightAnchor="5.0"
-              AnchorPane.bottomAnchor="5.0">
-            <TextField fx:id="userInput"
-                       onAction="#handleUserInput"
-                       HBox.hgrow="ALWAYS"/>
-            <Button fx:id="sendButton"
-                    text="Send"
-                    minWidth="60.0"
-                    onAction="#handleUserInput"/>
+        <HBox spacing="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.bottomAnchor="5.0">
+            <TextField fx:id="userInput" onAction="#handleUserInput" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="sendButton" text="Send" minWidth="60.0" onAction="#handleUserInput"/>
         </HBox>
     </children>
 </AnchorPane>

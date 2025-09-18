@@ -88,9 +88,13 @@ public class MainWindow extends AnchorPane {
 
         String response = tim.getResponse(input);
 
+        // Check if response is an error
+        boolean isError = response.startsWith("OOPS!!!");
+
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getTimDialog(response, timImage)
+                isError ? DialogBox.getErrorDialog(response, timImage)
+                        : DialogBox.getTimDialog(response, timImage)
         );
 
         userInput.clear();
