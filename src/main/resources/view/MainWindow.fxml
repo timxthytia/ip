@@ -8,31 +8,37 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tim.gui.MainWindow"
             prefWidth="400.0" prefHeight="600.0"
+            minWidth="300.0" minHeight="400.0"
             stylesheets="@/css/app.css">
     <children>
+        <ReminderBox fx:id="reminderBox"
+                     AnchorPane.topAnchor="1.0"
+                     AnchorPane.leftAnchor="1.0"
+                     AnchorPane.rightAnchor="1.0"/>
+
         <ScrollPane fx:id="scrollPane"
-                    prefWidth="385.0" prefHeight="535.0"
-                    hbarPolicy="NEVER" vbarPolicy="ALWAYS"
-                    AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="1.0"
-                    AnchorPane.rightAnchor="1.0">
+                    hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    fitToWidth="true"
+                    AnchorPane.topAnchor="30.0"
+                    AnchorPane.leftAnchor="5.0"
+                    AnchorPane.rightAnchor="5.0"
+                    AnchorPane.bottomAnchor="50.0">
             <content>
-                <VBox fx:id="dialogContainer"/>
+                <VBox fx:id="dialogContainer" spacing="5.0"/>
             </content>
         </ScrollPane>
 
-        <ReminderBox fx:id="reminderBox"
-                         AnchorPane.topAnchor="1.0"
-                         AnchorPane.leftAnchor="1.0"
-                         AnchorPane.rightAnchor="1.0"/>
-
-        <TextField fx:id="userInput"
-                   prefWidth="325.0"
-                   onAction="#handleUserInput"
-                   AnchorPane.leftAnchor="1.0" AnchorPane.bottomAnchor="1.0"/>
-
-        <Button fx:id="sendButton" text="Send"
-                prefWidth="55.0"
-                onAction="#handleUserInput"
-                AnchorPane.rightAnchor="1.0" AnchorPane.bottomAnchor="1.0"/>
+        <HBox spacing="5.0"
+              AnchorPane.leftAnchor="5.0"
+              AnchorPane.rightAnchor="5.0"
+              AnchorPane.bottomAnchor="5.0">
+            <TextField fx:id="userInput"
+                       onAction="#handleUserInput"
+                       HBox.hgrow="ALWAYS"/>
+            <Button fx:id="sendButton"
+                    text="Send"
+                    minWidth="60.0"
+                    onAction="#handleUserInput"/>
+        </HBox>
     </children>
 </AnchorPane>

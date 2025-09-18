@@ -23,7 +23,6 @@ public class Main extends Application {
         );
         stage.setScene(scene);
         stage.setTitle("Tim");
-        stage.setResizable(false);
         stage.show();
     }
 }
