@@ -1,10 +1,15 @@
 package tim.reminder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -25,19 +30,19 @@ import tim.task.TaskList;
  *   <li>{@link Event} — at the start date/time</li>
  * </ul>
  *
- * <p>Reminders are delivered to a {@link ReminderListener} (e.g., GUI) which may
- * display a popup.</p>
+ * <p>Reminders are delivered to a {@link ReminderListener} on the GUI, which may
+ * display a popup. Dismissed reminders are persisted to prevent re-firing across sessions.</p>
  */
 public class ReminderService {
 
-    /** How frequently to scan the task list for triggers. */
-    public static final Duration SCAN_PERIOD = Duration.ofSeconds(20); // ~15–30s is typical
+    // Scan frequency to scan task list for triggers
+    public static final Duration SCAN_PERIOD = Duration.ofSeconds(20);
 
-    /**
-     * On startup, also fire any reminders that were missed within this grace window
-     * (e.g., app was closed at the trigger moment).
-     */
+    // On startup, fire any reminders that were missed within grace window
     public static final Duration STARTUP_GRACE = Duration.ofHours(24);
+
+    // File to store dismissed reminder keys
+    private static final String DISMISSED_REMINDERS_FILE = "data/dismissed_reminders.txt";
 
     private final TaskList tasks;
     private final ReminderListener listener;
@@ -48,15 +53,14 @@ public class ReminderService {
         return t;
     });
 
-    /**
-     * Keys of reminders already delivered (to ensure one-time firing).
-     */
+    // Keys of reminders that have already been fired.
+    // Use ConcurrentHashMap for thread safety without synchronization.
     private final Set<String> firedKeys = ConcurrentHashMap.newKeySet();
 
-    /** Last time we completed a scan. Used for catching up missed triggers. */
-    private volatile Instant lastScan = Instant.now().minus(STARTUP_GRACE);
+    // Last time we completed a scan, used for catching up missed triggers.
+    private Instant lastScan = Instant.now().minus(STARTUP_GRACE);
 
-    private volatile boolean running = false;
+    private boolean running = false;
 
     /**
      * Constructs a reminder service.
@@ -67,33 +71,74 @@ public class ReminderService {
     public ReminderService(TaskList tasks, ReminderListener listener) {
         this.tasks = Objects.requireNonNull(tasks, "tasks");
         this.listener = Objects.requireNonNull(listener, "listener");
+        loadDismissedKeys();
     }
 
-    /** Starts periodic scanning. Safe to call once. */
-    public synchronized void start() {
+    /**
+     * Starts periodic scanning. Safe to call once.
+     */
+    public void start() {
         if (running) {
             return;
         }
         running = true;
-        // First run immediately, then with a fixed delay (avoids drift if scans take time).
+        // First run immediately, then subsequent runs with a fixed delay.
         scheduler.scheduleWithFixedDelay(this::safeScanOnce,
                 0,
                 SCAN_PERIOD.toSeconds(),
                 TimeUnit.SECONDS);
     }
 
-    /** Stops periodic scanning and releases resources. */
-    public synchronized void stop() {
+    /**
+     * Stops periodic scanning and saves dismissed keys.
+     */
+    public void stop() {
         running = false;
         scheduler.shutdownNow();
+        saveDismissedKeys();
     }
 
-    /** Performs a single scan with exception safety (keeps scheduler alive). */
+    /**
+     * Loads previously dismissed reminder keys from file.
+     */
+    private void loadDismissedKeys() {
+        Path path = Paths.get(DISMISSED_REMINDERS_FILE);
+        if (!Files.exists(path)) {
+            return; // No previously dismissed reminders
+        }
+
+        try {
+            Set<String> loaded = new HashSet<>(Files.readAllLines(path));
+            firedKeys.addAll(loaded);
+            System.out.println("[ReminderService] Loaded " + loaded.size() + " dismissed reminders");
+        } catch (IOException e) {
+            System.err.println("[ReminderService] Failed to load dismissed reminders: " + e.getMessage());
+            // Continue with empty set
+        }
+    }
+
+    /**
+     * Saves currently dismissed reminder keys to file.
+     */
+    private void saveDismissedKeys() {
+        Path path = Paths.get(DISMISSED_REMINDERS_FILE);
+
+        try {
+            Files.createDirectories(path.getParent()); // Ensure data directory exists
+            Files.write(path, firedKeys); // Write all dismissed keys, one per line
+            System.out.println("[ReminderService] Saved " + firedKeys.size() + " dismissed reminders");
+        } catch (IOException e) {
+            System.err.println("[ReminderService] Failed to save dismissed reminders: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Performs a single scan with exception safety (keeps scheduler alive).
+     */
     private void safeScanOnce() {
         try {
             scanOnce();
         } catch (Exception e) { // keep scanning even if one pass fails
-            // Log clearly; do not fail silently.
             System.err.println("[ReminderService] Scan failed: " + e.getMessage());
             e.printStackTrace(System.err);
         }
@@ -113,7 +158,6 @@ public class ReminderService {
             try {
                 task = tasks.get(i);
             } catch (IndexOutOfBoundsException e) {
-                // If TaskList throws (e.g., index changed during scan), skip this index.
                 continue;
             }
 
@@ -143,19 +187,36 @@ public class ReminderService {
     }
 
     /**
-     * Decides whether to fire a reminder for the given task and trigger time.
+     * Determines whether to fire a reminder for a specific task based on its trigger time
+     * and current system state. A reminder will only be fired if all conditions are met:
+     * the trigger time has passed, the reminder hasn't been fired before, and the trigger
+     * falls within the startup grace window.
+     *
+     * <p>This method implements the core reminder firing logic with deduplication to ensure
+     * one-time delivery. When a reminder is fired, it is immediately persisted to prevent
+     * re-firing across application sessions.</p>
+     *
+     * @param index the 0-based index of the task in the TaskList
+     * @param task the Task object containing the reminder details
+     * @param trigger the exact Instant when this reminder should fire
+     * @param type the type of reminder (DEADLINE_DUE or EVENT_START)
+     * @param previousScan the Instant of the previous scan, used for grace window calculation
+     * @param now the current Instant, used to determine if trigger has passed
      */
     private void maybeFire(int index, Task task, Instant trigger, ReminderType type,
                            Instant previousScan, Instant now) {
         String key = key(type, index, trigger);
 
         // Fire if trigger has passed, and we haven't already fired this key,
-        // and the trigger is not too far in the past (beyond grace window).
+        // and the trigger is within the grace window.
         boolean inCatchupWindow = trigger.isAfter(previousScan.minus(STARTUP_GRACE));
         if (trigger.isBefore(now) && inCatchupWindow && firedKeys.add(key)) {
             ReminderEvent evt = new ReminderEvent(index, task.toString(),
                     trigger.atZone(ZoneId.systemDefault()).toLocalDateTime(), type, key);
             listener.onReminder(evt);
+
+            // Save immediately when a new reminder is fired
+            saveDismissedKeys();
         }
     }
 
@@ -164,13 +225,14 @@ public class ReminderService {
     }
 
     /**
-     * Dismisses a previously delivered reminder; it will not fire again for the same key.
+     * Dismisses a previously delivered reminder, so that it will not fire again for the same key.
      */
     public void dismiss(ReminderEvent event) {
         if (event == null) {
             return;
         }
         firedKeys.add(event.getKey());
+        saveDismissedKeys(); // Persist immediately on dismissal
     }
 
     /** Listener interface for receiving reminder events (e.g., GUI popup). */
@@ -185,7 +247,7 @@ public class ReminderService {
     }
 
     /**
-     * Immutable value that describes a reminder to show to the user.
+     * Immutable, nested ReminderEvent class that describes a reminder to show to the user.
      */
     public static final class ReminderEvent {
         private final int taskIndex;
@@ -216,6 +278,13 @@ public class ReminderService {
             return taskIndex;
         }
 
+        /**
+         * Returns the human-readable string representation of the task that triggered this reminder.
+         * This label includes the task type, completion status, description, and any
+         * associated dates (e.g., "[D][ ] submit assignment (by: Oct 15 2024 14:00)").
+         *
+         * @return the formatted task string as it appears in the GUI.
+         */
         public String getTaskLabel() {
             return taskLabel;
         }
@@ -228,7 +297,20 @@ public class ReminderService {
             return type;
         }
 
-        /** Internal identifier linking this reminder to a specific task/time. */
+        /**
+         * Returns the unique internal identifier used for reminder deduplication and persistence.
+         * The key format is "{@code TYPE#INDEX#TIMESTAMP}" (e.g., "DEADLINE_DUE#2#1726621680000")
+         * and combines the reminder type, task index, and trigger time in milliseconds.
+         *
+         * <p>This key serves multiple purposes:</p>
+         * <ul>
+         *   <li>Prevents duplicate reminders from firing multiple times</li>
+         *   <li>Enables persistence of dismissed reminders across application sessions</li>
+         *   <li>Links dismissal actions back to the specific reminder instance</li>
+         * </ul>
+         *
+         * @return the unique reminder key used for deduplication and persistence
+         */
         public String getKey() {
             return key;
         }
