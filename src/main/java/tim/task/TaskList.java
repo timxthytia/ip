@@ -25,7 +25,8 @@ public class TaskList {
      * @param tasks the existing list of tasks to initialise with, or null for empty.
      */
     public TaskList(ArrayList<Task> tasks) { //Overloaded constructor
-        assert tasks == null || tasks.stream().allMatch(t -> t != null) : "Task list must not contain null elements";
+        assert tasks == null || tasks.stream().allMatch(t -> t != null)
+                : "Task list must not contain null elements";
         this.tasks = tasks != null ? tasks : new ArrayList<>();
     }
 

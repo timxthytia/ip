@@ -18,9 +18,7 @@ public class Main extends Application {
         controller.setTim(new Tim("data/tasks.txt")); // reuse save file
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(
-                Main.class.getResource("/css/app.css").toExternalForm()
-        );
+        scene.getStylesheets().add(Main.class.getResource("/css/app.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Tim");
         stage.show();

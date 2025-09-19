@@ -21,11 +21,43 @@ import tim.exception.TimException;
  * Responsible for interpreting user input and converting it into commands.
  * Provides methods to parse full user commands into specific Command
  * objects, as well as utility methods to parse dates and times in strict formats.
- *
  */
 public class Parser {
+    // Date/time formatters
     private static final DateTimeFormatter INPUT_DATE_ONLY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter INPUT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    // Command keywords
+    private static final String LIST_COMMAND = "list";
+    private static final String MARK_COMMAND = "mark ";
+    private static final String UNMARK_COMMAND = "unmark ";
+    private static final String BYE_COMMAND = "bye";
+    private static final String TODO_COMMAND = "todo";
+    private static final String DEADLINE_COMMAND = "deadline";
+    private static final String EVENT_COMMAND = "event";
+    private static final String DELETE_COMMAND = "delete";
+    private static final String FIND_COMMAND = "find ";
+
+    // Format separators
+    private static final String BY_SEPARATOR = "/by";
+    private static final String FROM_SEPARATOR = "/from";
+    private static final String TO_SEPARATOR = "/to";
+
+    // Command substring lengths
+    private static final int TODO_PREFIX_LENGTH = 4;
+    private static final int MARK_PREFIX_LENGTH = 5;
+    private static final int UNMARK_PREFIX_LENGTH = 7;
+    private static final int DELETE_PREFIX_LENGTH = 7;
+    private static final int FIND_PREFIX_LENGTH = 5;
+
+    // Error messages
+    private static final String ERROR_PROVIDE_TASK_NUMBER = "OOPS!!! Provide a task number.";
+    private static final String ERROR_TASK_NUMBER_INTEGER = "OOPS!!! Task number must be an integer.";
+    private static final String ERROR_UNKNOWN_COMMAND = "OOPS!!! I'm sorry, but I don't know what that means :-(";
+    private static final String ERROR_DEADLINE_FORMAT = "Deadline format: deadline <desc> /by <due date>.";
+    private static final String ERROR_EVENT_FORMAT = "Event format: event <desc> /from <start> /to <end>.";
+    private static final String ERROR_DATE_FORMAT = "Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).";
+    private static final String ERROR_DATE_FORMAT_EVENT = "Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).";
 
     /**
      * Parses a string into a LocalDateTime, using strict date and date-time formats.
@@ -40,24 +72,27 @@ public class Parser {
         assert s != null : "Parser.parseStrictDateOrDateTime: input is null";
         String trimmed = s.trim();
         assert !trimmed.isEmpty() : "Parser.parseStrictDateOrDateTime: input is blank";
+
         try {
             return LocalDateTime.parse(trimmed, INPUT_DATE_TIME);
         } catch (DateTimeParseException ignored) {
             // ignore and try next format
         }
+
         try {
             LocalDate d = LocalDate.parse(trimmed, INPUT_DATE_ONLY);
             return d.atStartOfDay();
         } catch (DateTimeParseException ignored) {
             // ignore and try ISO default parsing
         }
+
         try {
             return LocalDateTime.parse(trimmed);
         } catch (DateTimeParseException ignored) {
             // ignore and throw a clearer message below
         }
-        throw new IllegalArgumentException(
-                "Unrecognized date/time (use yyyy-MM-dd or yyyy-MM-dd HHmm): " + s);
+
+        throw new IllegalArgumentException("Unrecognized date/time (use yyyy-MM-dd or yyyy-MM-dd HHmm): " + s);
     }
 
     /**
@@ -69,29 +104,67 @@ public class Parser {
      */
     public static Command parse(String input) throws TimException {
         assert input != null : "Parser.parse: input is null";
-        if (input.equals("list")) {
+
+        if (input.equals(LIST_COMMAND)) {
             return new ListCommand();
-        } else if (input.startsWith("mark ")) {
-            return new MarkCommand(parseIndex(input.substring(5)));
-        } else if (input.startsWith("unmark ")) {
-            return new UnmarkCommand(parseIndex(input.substring(7)));
-        } else if (input.equals("bye")) {
+        } else if (input.equals(BYE_COMMAND)) {
             return new ExitCommand();
-        } else if (input.startsWith("todo")) {
-            return new AddTodoCommand(input.substring(4).trim());
-        } else if (input.startsWith("deadline")) {
+        } else if (input.startsWith(MARK_COMMAND)) {
+            return createMarkCommand(input);
+        } else if (input.startsWith(UNMARK_COMMAND)) {
+            return createUnmarkCommand(input);
+        } else if (input.startsWith(TODO_COMMAND)) {
+            return createTodoCommand(input);
+        } else if (input.startsWith(DEADLINE_COMMAND)) {
             return parseDeadline(input);
-        } else if (input.startsWith("event")) {
+        } else if (input.startsWith(EVENT_COMMAND)) {
             return parseEvent(input);
-        } else if (input.equals("delete")) {
-            throw new TimException("OOPS!!! Provide a task number.");
-        } else if (input.startsWith("delete ")) {
-            return new DeleteCommand(parseIndex(input.substring(7)));
-        } else if (input.startsWith("find ")) {
-            String keyword = input.substring(5).trim();
-            return new FindCommand(keyword);
+        } else if (input.startsWith(DELETE_COMMAND)) {
+            return createDeleteCommand(input);
+        } else if (input.startsWith(FIND_COMMAND)) {
+            return createFindCommand(input);
+        } else {
+            throw new TimException(ERROR_UNKNOWN_COMMAND);
         }
-        throw new TimException("OOPS!!! I'm sorry, but I don't know what that means :-(");
+    }
+
+    /**
+     * Creates a MarkCommand from user input.
+     */
+    private static Command createMarkCommand(String input) throws TimException {
+        return new MarkCommand(parseIndex(input.substring(MARK_PREFIX_LENGTH)));
+    }
+
+    /**
+     * Creates an UnmarkCommand from user input.
+     */
+    private static Command createUnmarkCommand(String input) throws TimException {
+        return new UnmarkCommand(parseIndex(input.substring(UNMARK_PREFIX_LENGTH)));
+    }
+
+    /**
+     * Creates an AddTodoCommand from user input.
+     */
+    private static Command createTodoCommand(String input) throws TimException {
+        return new AddTodoCommand(input.substring(TODO_PREFIX_LENGTH).trim());
+    }
+
+    /**
+     * Creates a DeleteCommand from user input.
+     */
+    private static Command createDeleteCommand(String input) throws TimException {
+        if (input.equals(DELETE_COMMAND)) {
+            throw new TimException(ERROR_PROVIDE_TASK_NUMBER);
+        }
+        return new DeleteCommand(parseIndex(input.substring(DELETE_PREFIX_LENGTH)));
+    }
+
+    /**
+     * Creates a FindCommand from user input.
+     */
+    private static Command createFindCommand(String input) throws TimException {
+        String keyword = input.substring(FIND_PREFIX_LENGTH).trim();
+        return new FindCommand(keyword);
     }
 
     /**
@@ -103,14 +176,16 @@ public class Parser {
      */
     private static int parseIndex(String s) throws TimException {
         assert s != null : "Parser.parseIndex: input is null";
-        String t = s.trim();
-        if (t.isBlank()) {
-            throw new TimException("OOPS!!! Provide a task number.");
+        String trimmed = s.trim();
+
+        if (trimmed.isBlank()) {
+            throw new TimException(ERROR_PROVIDE_TASK_NUMBER);
         }
+
         try {
-            return Integer.parseInt(t);
+            return Integer.parseInt(trimmed);
         } catch (NumberFormatException e) {
-            throw new TimException("OOPS!!! Task number must be an integer.");
+            throw new TimException(ERROR_TASK_NUMBER_INTEGER);
         }
     }
 
@@ -123,24 +198,48 @@ public class Parser {
      */
     private static Command parseDeadline(String input) throws TimException {
         assert input != null : "Parser.parseDeadline: input is null";
-        String body = input.substring("deadline".length()).trim();
-        if (!body.contains("/by")) {
-            throw new TimException("Deadline format: deadline <desc> /by <due date>.");
-        }
-        String[] parts = body.split("/by", 2);
-        if (parts.length < 2 || parts[0].trim().isBlank() || parts[1].trim().isBlank()) {
-            throw new TimException("Deadline format: deadline <desc> /by <due date>.");
-        }
+
+        String body = input.substring(DEADLINE_COMMAND.length()).trim();
+        validateDeadlineFormat(body);
+
+        String[] parts = body.split(BY_SEPARATOR, 2);
+        validateDeadlineParts(parts);
+
         String desc = parts[0].trim();
         String date = parts[1].trim();
-        LocalDateTime dueDateTime;
-        try {
-            dueDateTime = parseStrictDateOrDateTime(date);
-        } catch (IllegalArgumentException ex) {
-            throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).");
-        }
+        LocalDateTime dueDateTime = parseDeadlineDateTime(date);
+
         assert dueDateTime != null : "Parser.parseDeadline: dueDateTime is null";
         return new AddDeadlineCommand(desc, dueDateTime);
+    }
+
+    /**
+     * Validates the format of a deadline command body.
+     */
+    private static void validateDeadlineFormat(String body) throws TimException {
+        if (!body.contains(BY_SEPARATOR)) {
+            throw new TimException(ERROR_DEADLINE_FORMAT);
+        }
+    }
+
+    /**
+     * Validates the parts of a deadline command after splitting.
+     */
+    private static void validateDeadlineParts(String[] parts) throws TimException {
+        if (parts.length < 2 || parts[0].trim().isBlank() || parts[1].trim().isBlank()) {
+            throw new TimException(ERROR_DEADLINE_FORMAT);
+        }
+    }
+
+    /**
+     * Parses the date/time portion of a deadline command.
+     */
+    private static LocalDateTime parseDeadlineDateTime(String date) throws TimException {
+        try {
+            return parseStrictDateOrDateTime(date);
+        } catch (IllegalArgumentException ex) {
+            throw new TimException(ERROR_DATE_FORMAT);
+        }
     }
 
     /**
@@ -152,36 +251,75 @@ public class Parser {
      */
     private static Command parseEvent(String input) throws TimException {
         assert input != null : "Parser.parseEvent: input is null";
-        String body = input.substring("event".length()).trim();
-        if (!body.contains("/from") || !body.contains("/to")) {
-            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
-        }
-        String[] dateSplit = body.split("/from", 2);
-        if (dateSplit.length < 2) {
-            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
-        }
+
+        String body = input.substring(EVENT_COMMAND.length()).trim();
+        validateEventFormat(body);
+
+        String[] dateSplit = body.split(FROM_SEPARATOR, 2);
+        validateFromSplit(dateSplit); // Extract /from date
+
         String desc = dateSplit[0].trim();
-        String[] toSplit = dateSplit[1].split("/to", 2);
-        if (toSplit.length < 2) {
-            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
-        }
+        String[] toSplit = dateSplit[1].split(TO_SEPARATOR, 2);
+        validateToSplit(toSplit); // Extract /to date
+
         String start = toSplit[0].trim();
         String end = toSplit[1].trim();
-        if (desc.isBlank() || start.isBlank() || end.isBlank()) {
-            throw new TimException("Event format: event <desc> /from <start> /to <end>.");
-        }
+        validateEventComponents(desc, start, end);
 
-        LocalDateTime startDT;
-        LocalDateTime endDT;
-        try {
-            startDT = parseStrictDateOrDateTime(start);
-            endDT = parseStrictDateOrDateTime(end);
-        } catch (IllegalArgumentException ex) {
-            throw new TimException("Use yyyy-MM-dd or yyyy-MM-dd HHmm (e.g. 2019-10-15 0900).");
-        }
+        LocalDateTime startDT = parseEventDateTime(start);
+        LocalDateTime endDT = parseEventDateTime(end);
+
         assert startDT != null : "Parser.parseEvent: startDT is null";
         assert endDT != null : "Parser.parseEvent: endDT is null";
         assert !endDT.isBefore(startDT) : "Parser.parseEvent: end before start";
+
         return new AddEventCommand(desc, startDT, endDT);
+    }
+
+    /**
+     * Validates the format of an event command body.
+     */
+    private static void validateEventFormat(String body) throws TimException {
+        if (!body.contains(FROM_SEPARATOR) || !body.contains(TO_SEPARATOR)) {
+            throw new TimException(ERROR_EVENT_FORMAT);
+        }
+    }
+
+    /**
+     * Validates the first split of an event command (before /from).
+     */
+    private static void validateFromSplit(String[] dateSplit) throws TimException {
+        if (dateSplit.length < 2) {
+            throw new TimException(ERROR_EVENT_FORMAT);
+        }
+    }
+
+    /**
+     * Validates the second split of an event command (after /to).
+     */
+    private static void validateToSplit(String[] toSplit) throws TimException {
+        if (toSplit.length < 2) {
+            throw new TimException(ERROR_EVENT_FORMAT);
+        }
+    }
+
+    /**
+     * Validates that all event components are non-blank.
+     */
+    private static void validateEventComponents(String desc, String start, String end) throws TimException {
+        if (desc.isBlank() || start.isBlank() || end.isBlank()) {
+            throw new TimException(ERROR_EVENT_FORMAT);
+        }
+    }
+
+    /**
+     * Parses the date/time portion of an event command.
+     */
+    private static LocalDateTime parseEventDateTime(String dateTime) throws TimException {
+        try {
+            return parseStrictDateOrDateTime(dateTime);
+        } catch (IllegalArgumentException ex) {
+            throw new TimException(ERROR_DATE_FORMAT_EVENT);
+        }
     }
 }

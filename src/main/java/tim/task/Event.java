@@ -2,6 +2,7 @@ package tim.task;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -39,17 +40,25 @@ public class Event extends Task {
      */
     public Event(String description, LocalDateTime start, LocalDateTime end) {
         super(description);
-        if (start == null) {
-            throw new IllegalArgumentException("Event start must not be null.");
-        }
-        if (end == null) {
-            throw new IllegalArgumentException("Event end must not be null.");
-        }
-        if (end.isBefore(start)) {
+        this.start = Objects.requireNonNull(start, "Event start must not be null.");
+        this.end = Objects.requireNonNull(end, "Event end must not be null.");
+        if (this.end.isBefore(this.start)) {
             throw new IllegalArgumentException("Event end must not be before start.");
         }
-        this.start = start;
-        this.end = end;
+    }
+
+    /**
+     * Returns the start date/time of the event.
+     */
+    public LocalDateTime getStart() {
+        return start;
+    }
+
+    /**
+     * Returns the end date/time of the event.
+     */
+    public LocalDateTime getEnd() {
+        return end;
     }
 
     /**
@@ -97,10 +106,31 @@ public class Event extends Task {
     @Override
     public String toString() {
         final String base = "[E]" + super.toString();
+        final String startStr = start.format(DISPLAY_FORMATTER);
+        final String endStr = end.format(DISPLAY_FORMATTER);
         if (start.equals(end)) {
-            return String.format("%s (on: %s)", base, start.format(DISPLAY_FORMATTER));
+            return String.format("%s (on: %s)", base, startStr);
         }
-        return String.format("%s (from: %s to: %s)",
-                base, start.format(DISPLAY_FORMATTER), end.format(DISPLAY_FORMATTER));
+        return String.format("%s (from: %s to: %s)", base, startStr, endStr);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Event)) {
+            return false;
+        }
+        Event event = (Event) o;
+        return Objects.equals(getDescription(), event.getDescription())
+                && Objects.equals(start, event.start)
+                && Objects.equals(end, event.end)
+                && (this.isCompleted() == event.isCompleted());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDescription(), start, end, isCompleted());
     }
 }

@@ -1,6 +1,7 @@
 package tim.gui;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,73 +14,105 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 
 /**
- * This control contains a dialog box consisting of an ImageView to represent the speaker's face
- * and a label containing text from the speaker wrapped in a chat bubble.
+ * A reusable chat bubble control composed of a text label and a circular avatar image.
+ * Supports variants for user, Tim, and error messages.
  */
-public class DialogBox extends HBox {
+public final class DialogBox extends HBox {
+    private static final String FXML_PATH = "/view/DialogBox.fxml";
+    private static final String CLASS_CHAT_TEXT = "chat-text";
+    private static final String CLASS_USER_BUBBLE = "user-bubble";
+    private static final String CLASS_TIM_BUBBLE = "tim-bubble";
+    private static final String CLASS_ERROR_BUBBLE = "error-bubble";
     @FXML
     private Label dialog;
     @FXML
     private ImageView displayPicture;
     @FXML
     private VBox messageContainer;
-
+    /**
+     * Constructs a DialogBox with the specified text and image.
+     *
+     * @param text the text to display in the dialog box
+     * @param img the image to display as the avatar
+     */
     private DialogBox(String text, Image img) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view/DialogBox.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXML_PATH));
             fxmlLoader.setRoot(this);
             fxmlLoader.setController(this);
             fxmlLoader.load();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to load FXML for DialogBox from " + FXML_PATH, e);
         }
 
-        dialog.setText(text);
-        dialog.getStyleClass().add("chat-text");
-        displayPicture.setImage(img);
+        // Normalize and apply content
+        this.dialog.setText(text == null ? "" : text.trim());
+        this.dialog.getStyleClass().add(CLASS_CHAT_TEXT);
+        this.displayPicture.setImage(Objects.requireNonNull(img, "Display image must not be null."));
 
-        // Create circular view for profile picture
+        // Create circular clip for profile picture without using bindings
+        applyCircularClip(displayPicture);
+    }
+
+    /**
+     * Applies a circular clip to the given ImageView using fixed values.
+     *
+     * @param iv the ImageView to apply the circular clip to
+     */
+    private static void applyCircularClip(ImageView iv) {
         Circle clip = new Circle();
         clip.setCenterX(49.5);
         clip.setCenterY(49.5);
         clip.setRadius(49.5);
-        displayPicture.setClip(clip);
+        iv.setClip(clip);
     }
 
     /**
-     * Flips the dialog box such that the ImageView is on the left and text on the right.
+     * Flips the dialog so the avatar is on the left and the message is on the right.
+     *
      */
     private void flip() {
-        this.setAlignment(Pos.TOP_LEFT);
-        getChildren().clear();
-        getChildren().addAll(displayPicture, messageContainer);
+        setAlignment(Pos.TOP_LEFT);
+        getChildren().setAll(displayPicture, messageContainer);
     }
 
     /**
      * Creates a dialog box for user input.
+     *
+     * @param text the text to display in the dialog box
+     * @param img the image to display as the avatar
+     * @return a DialogBox configured for user input
      */
     public static DialogBox getUserDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
-        db.getStyleClass().add("user-bubble");
+        db.getStyleClass().add(CLASS_USER_BUBBLE);
         return db;
     }
 
     /**
      * Creates a dialog box for Tim's responses.
+     *
+     * @param text the text to display in the dialog box
+     * @param img the image to display as the avatar
+     * @return a DialogBox configured for Tim's responses
      */
     public static DialogBox getTimDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
-        db.getStyleClass().add("tim-bubble");
+        db.getStyleClass().add(CLASS_TIM_BUBBLE);
         db.flip();
         return db;
     }
 
     /**
      * Creates a dialog box for error messages with special red styling.
+     *
+     * @param text the text to display in the dialog box
+     * @param img the image to display as the avatar
+     * @return a DialogBox configured for error messages
      */
     public static DialogBox getErrorDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
-        db.getStyleClass().addAll("tim-bubble", "error-bubble");
+        db.getStyleClass().addAll(CLASS_TIM_BUBBLE, CLASS_ERROR_BUBBLE);
         db.flip();
         return db;
     }

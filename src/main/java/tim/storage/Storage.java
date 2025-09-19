@@ -19,164 +19,307 @@ import tim.task.Todo;
 
 /**
  * Handles reading and writing tasks to a save file on disk.
- * The {@code Storage} class is responsible for persisting the user's task list across program runs.
+ * The Storage class is responsible for persisting the user's task list across program runs.
  * It loads tasks from the given file when the application starts, and saves the current tasks
  * back to the file whenever changes are made.
  */
 public class Storage {
-    // Constants
-    private static final String DELIM_REGEX = "\\s*\\|\\s*"; // e.g., T | 1 | desc | 2020-01-01 1800
-    private static final String RANGE_TO_REGEX = "\\s*to\\s*"; // e.g., "Aug 6th 2 to 4pm"
-    private static final String TYPE_TODO = "T";
-    private static final String TYPE_DEADLINE = "D";
-    private static final String TYPE_EVENT = "E";
+    // File format constants
+    private static final String FIELD_DELIMITER_REGEX = "\\s*\\|\\s*";
+    private static final String TIME_RANGE_DELIMITER_REGEX = "\\s*to\\s*";
 
-    private final Path dataDir;
+    // Task type identifiers
+    private static final String TODO_TYPE_CODE = "T";
+    private static final String DEADLINE_TYPE_CODE = "D";
+    private static final String EVENT_TYPE_CODE = "E";
+
+    // Task completion flags
+    private static final String COMPLETED_FLAG = "1";
+    private static final String INCOMPLETE_FLAG = "0";
+
+    // Minimum required fields for different task types
+    private static final int MIN_FIELDS_BASE = 3; // type, done, description
+    private static final int MIN_FIELDS_DEADLINE = 4; // + due date
+    private static final int MIN_FIELDS_EVENT = 4; // + time range
+    private static final int EXPECTED_TIME_RANGE_PARTS = 2; // start to end
+
+    // Logging prefix
+    private static final String LOG_PREFIX = "[Storage]";
+
+    private final Path dataDirectory;
     private final Path dataFile;
 
     /**
-     * Creates a new {@code Storage} object with the given file path.
+     * Creates a new Storage object with the given file path.
      *
-     * @param filePath the path of the file to save/load tasks from.
+     * @param filePath the path of the file to save/load tasks from
      */
     public Storage(String filePath) {
-        Path p = Paths.get(filePath);
-        this.dataDir = p.getParent() == null ? Paths.get(".") : p.getParent();
-        this.dataFile = p;
+        Path path = Paths.get(filePath);
+        this.dataDirectory = determineDataDirectory(path);
+        this.dataFile = path;
     }
 
     /**
-     * Loads tasks from the data file into a {@link TaskList}.
+     * Determines the data directory from the given file path.
+     * @param filePath the file path to extract the directory from
+     * @return the parent directory of the file, or current directory if no parent exists
+     */
+    private Path determineDataDirectory(Path filePath) {
+        Path parent = filePath.getParent();
+        return parent != null ? parent : Paths.get(".");
+    }
+
+    /**
+     * Loads tasks from the data file into a TaskList.
      * If the file or its parent directory does not exist, this method creates the directory
      * and returns an empty list.
      *
-     * @return a {@code TaskList} containing the tasks loaded from file.
-     * @throws TimException if an I/O error occurs when preparing the data location or reading the file.
+     * @return a TaskList containing the tasks loaded from file
+     * @throws TimException if an I/O error occurs when preparing the data location or reading the file
      */
     public TaskList load() throws TimException {
-        TaskList list = new TaskList();
+        TaskList taskList = new TaskList();
+
         try {
-            // Ensure data directory exists; if there's no file yet, return empty list.
-            ensureDataDirExists();
+            ensureDataDirectoryExists();
+
             if (!Files.exists(dataFile)) {
-                return list;
+                return taskList;
             }
 
-            try (BufferedReader br = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    Task parsed = parseLineToTask(line);
-                    if (parsed != null) {
-                        list.add(parsed);
-                    }
-                }
-            }
-        } catch (IOException ioe) {
-            throw new TimException("Could not load tasks: " + ioe.getMessage(), ioe);
+            loadTasksFromFile(taskList);
+        } catch (IOException e) {
+            throw new TimException("Could not load tasks: " + e.getMessage(), e);
         }
-        return list;
+
+        return taskList;
     }
 
     /**
-     * Saves the given {@link TaskList} to the data file. Creates the data directory if needed.
+     * Loads tasks from the file into the given task list.
+     * @param taskList the TaskList to populate with loaded tasks
+     * @throws IOException if an I/O error occurs while reading the file
+     */
+    private void loadTasksFromFile(TaskList taskList) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Task task = parseLineToTask(line);
+                if (task != null) {
+                    taskList.add(task);
+                }
+            }
+        }
+    }
+
+    /**
+     * Saves the given TaskList to the data file. Creates the data directory if needed.
      *
-     * @param tasks the tasks to save.
+     * @param tasks the tasks to save
      */
     public void save(TaskList tasks) {
         try {
-            ensureDataDirExists();
-            try (BufferedWriter bw = Files.newBufferedWriter(dataFile, StandardCharsets.UTF_8)) {
-                for (Task t : tasks.asList()) {
-                    bw.write(t.toStorageString());
-                    bw.newLine();
-                }
-            }
-        } catch (IOException ioe) {
-            System.out.println("Could not save tasks: " + ioe.getMessage());
-        }
-    }
-
-    // Helper methods (SLAP)
-
-    /** Ensures the data directory exists, creating it if necessary. */
-    private void ensureDataDirExists() throws IOException {
-        if (!Files.exists(dataDir)) {
-            Files.createDirectories(dataDir);
+            ensureDataDirectoryExists();
+            saveTasksToFile(tasks);
+        } catch (IOException e) {
+            logError("Could not save tasks: " + e.getMessage());
         }
     }
 
     /**
-     * Parses a single storage line into a {@link Task}. Returns {@code null} for malformed lines.
+     * Writes all tasks to the data file.
      *
-     * <p>Expected forms (whitespace around '|' is ignored):
+     * @param tasks the tasks to save to file.
+     */
+    private void saveTasksToFile(TaskList tasks) throws IOException {
+        try (BufferedWriter writer = Files.newBufferedWriter(dataFile, StandardCharsets.UTF_8)) {
+            for (Task task : tasks.asList()) {
+                writer.write(task.toStorageString());
+                writer.newLine();
+            }
+        }
+    }
+
+    /**
+     * Ensures the data directory exists, creates it if necessary.
+     */
+    private void ensureDataDirectoryExists() throws IOException {
+        if (!Files.exists(dataDirectory)) {
+            Files.createDirectories(dataDirectory);
+        }
+    }
+
+    /**
+     * Parses a single storage line into a Task. Returns null for malformed lines.
+     *
+     * <p>Expected formats:
      * <ul>
-     *   <li>{@code T | done | description}</li>
-     *   <li>{@code D | done | description | dueDateOrDateTime}</li>
-     *   <li>{@code E | done | description | start to end}</li>
+     *   <li>T | done | description</li>
+     *   <li>D | done | description | dueDateOrDateTime</li>
+     *   <li>E | done | description | start to end</li>
      * </ul>
-     * where {@code done} is {@code 0} or {@code 1}.</p>
+     * where done is 0 or 1.</p>
+     *
+     * @param line the storage line to parse
+     * @return the parsed Task, or null if the line is malformed
      */
     private Task parseLineToTask(String line) {
-        if (line == null || line.trim().isEmpty()) {
-            return null; // skip blank lines
-        }
-
-        String[] parts = line.split(DELIM_REGEX);
-        if (parts.length < 3) {
-            logSkip(line, "Too few fields");
+        if (isBlankLine(line)) {
             return null;
         }
 
-        String type = parts[0].trim();
-        String doneFlag = parts[1].trim();
-        String description = parts[2].trim();
-
-        Task task;
-        try {
-            switch (type) {
-            case TYPE_TODO:
-                task = new Todo(description);
-                break;
-            case TYPE_DEADLINE:
-                if (parts.length < 4) {
-                    logSkip(line, "Missing deadline datetime");
-                    return null;
-                }
-                LocalDateTime due = Parser.parseStrictDateOrDateTime(parts[3].trim());
-                task = new Deadline(description, due);
-                break;
-            case TYPE_EVENT:
-                if (parts.length < 4) {
-                    logSkip(line, "Missing event time range");
-                    return null;
-                }
-                String[] se = parts[3].split(RANGE_TO_REGEX);
-                if (se.length < 2) {
-                    logSkip(line, "Invalid event time range");
-                    return null;
-                }
-                LocalDateTime start = Parser.parseStrictDateOrDateTime(se[0].trim());
-                LocalDateTime end = Parser.parseStrictDateOrDateTime(se[1].trim());
-                task = new Event(description, start, end);
-                break;
-            default:
-                logSkip(line, "Unknown task type '" + type + "'");
-                return null;
-            }
-        } catch (Exception ex) {
-            // Date parsing (or similar) failed. Skip this malformed line.
-            logSkip(line, ex.getMessage());
+        String[] fields = line.split(FIELD_DELIMITER_REGEX);
+        if (hasInsufficientFields(fields, line)) {
             return null;
         }
 
-        if ("1".equals(doneFlag)) {
-            task.markAsDone();
+        String typeCode = fields[0].trim();
+        String completionFlag = fields[1].trim();
+        String description = fields[2].trim();
+
+        Task task = createTaskByType(typeCode, description, fields, line);
+        if (task != null) {
+            setTaskCompletion(task, completionFlag);
         }
+
         return task;
     }
 
-    /** Simple stderr logger for skipped lines (keeps behavior but explains why). */
-    private static void logSkip(String line, String reason) {
-        System.err.println("[Storage] Skipping malformed line: '" + line + "' — " + reason);
+    /**
+     * Checks if a line is blank or empty.
+     *
+     * @param line the line being parsed
+     */
+    private boolean isBlankLine(String line) {
+        return line == null || line.trim().isEmpty();
+    }
+
+    /**
+     * Checks if the parsed fields are insufficient for a basic task.
+     *
+     * @param fields The parsed fields from the storage line.
+     * @param line The original storage line, used for error logging.
+     * @return {@code true} if there are fewer than the minimum required fields, {@code false} otherwise.
+     */
+    private boolean hasInsufficientFields(String[] fields, String line) {
+        if (fields.length < MIN_FIELDS_BASE) {
+            logSkippedLine(line, "Too few fields");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Creates a task based on its type code.
+     *
+     * @param typeCode The type code of the task (T, D, or E).
+     * @param description The description of the task.
+     * @param fields The parsed fields of the line split by the delimiter.
+     * @param line The original line from the storage file, used for error logging.
+     * @return A {@link Task} if parsing is successful, or {@code null} if the line is malformed.
+     */
+    private Task createTaskByType(String typeCode, String description, String[] fields, String line) {
+        try {
+            switch (typeCode) {
+            case TODO_TYPE_CODE:
+                return createTodoTask(description);
+            case DEADLINE_TYPE_CODE:
+                return createDeadlineTask(description, fields, line);
+            case EVENT_TYPE_CODE:
+                return createEventTask(description, fields, line);
+            default:
+                logSkippedLine(line, "Unknown task type '" + typeCode + "'");
+                return null;
+            }
+        } catch (Exception e) {
+            logSkippedLine(line, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Creates a {@link Todo} task with the given description.
+     *
+     * @param description The description of the todo task.
+     * @return A new {@link Todo} task instance containing the provided description.
+     */
+    private Task createTodoTask(String description) {
+        return new Todo(description);
+    }
+
+    /**
+     * Creates a Deadline task from parsed fields.
+     *
+     * @param description The description of the deadline task.
+     * @param fields The parsed fields of the line split by the delimiter.
+     * @param line The original line from the storage file, used for error logging.
+     * @return A {@link Deadline} task if parsing is successful, or {@code null} if malformed.
+     */
+    private Task createDeadlineTask(String description, String[] fields, String line) {
+        if (fields.length < MIN_FIELDS_DEADLINE) {
+            logSkippedLine(line, "Missing deadline datetime");
+            return null;
+        }
+
+        LocalDateTime dueDateTime = Parser.parseStrictDateOrDateTime(fields[3].trim());
+        return new Deadline(description, dueDateTime);
+    }
+
+    /**
+     * Creates an Event task from parsed fields.
+     *
+     * @param description The description of the event task.
+     * @param fields The parsed fields of the line split by the delimiter.
+     * @param line The original line from the storage file, used for error logging.
+     * @return An {@link Event} task if parsing is successful, or {@code null} if malformed.
+     */
+    private Task createEventTask(String description, String[] fields, String line) {
+        if (fields.length < MIN_FIELDS_EVENT) {
+            logSkippedLine(line, "Missing event time range");
+            return null;
+        }
+
+        String[] timeRange = fields[3].split(TIME_RANGE_DELIMITER_REGEX);
+        if (timeRange.length < EXPECTED_TIME_RANGE_PARTS) {
+            logSkippedLine(line, "Invalid event time range");
+            return null;
+        }
+
+        LocalDateTime startTime = Parser.parseStrictDateOrDateTime(timeRange[0].trim());
+        LocalDateTime endTime = Parser.parseStrictDateOrDateTime(timeRange[1].trim());
+
+        return new Event(description, startTime, endTime);
+    }
+
+    /**
+     * Sets the completion status of a task based on the flag.
+     *
+     * @param task The task whose completion status is to be updated.
+     * @param completionFlag The flag indicating whether the task is completed.
+     */
+    private void setTaskCompletion(Task task, String completionFlag) {
+        if (COMPLETED_FLAG.equals(completionFlag)) {
+            task.markAsDone();
+        }
+    }
+
+    /**
+     * Logs a skipped line with the reason for skipping.
+     *
+     * @param line The line that was skipped.
+     * @param reason The reason why the line was skipped.
+     */
+    private void logSkippedLine(String line, String reason) {
+        System.err.println(LOG_PREFIX + " Skipping malformed line: '" + line + "' — " + reason);
+    }
+
+    /**
+     * Logs an error message.
+     *
+     * @param message The error message to log.
+     */
+    private void logError(String message) {
+        System.out.println(LOG_PREFIX + " " + message);
     }
 }
