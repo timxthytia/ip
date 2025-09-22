@@ -4,7 +4,7 @@ D | 0 | submit iP PR | 2025-09-20T23:59:00
 D | 1 | pay utilities | 2025-09-15T18:00:00
 E | 0 | project meeting | 2025-09-21T14:00:00 to 2025-09-21T16:00:00
 E | 0 | team standup | 2025-09-19T09:00:00 to 2025-09-19T09:30:00
-T | 0 | refactor Parser
+T | 1 | refactor Parser
 T | 0 | write JUnit tests
 D | 0 | renew domain | 2025-10-01T12:00:00
 E | 1 | family dinner | 2025-09-18T19:00:00 to 2025-09-18T21:00:00
